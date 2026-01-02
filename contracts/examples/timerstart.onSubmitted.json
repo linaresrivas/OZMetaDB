@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "kind": "TimerStart",
+  "description": "Start SLA when entering Submitted state",
+  "expr": {
+    "op": "eq",
+    "args": [
+      {
+        "ref": "transition.toState"
+      },
+      {
+        "lit": "Submitted",
+        "type": "string"
+      }
+    ]
+  }
+}

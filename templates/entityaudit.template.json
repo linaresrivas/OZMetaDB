@@ -1,0 +1,24 @@
+{
+  "templateType": "EntityAudit",
+  "version": 1,
+  "idStrategy": "UUIDv7",
+  "requiredColumns": [
+    "EA_ID",
+    "_TenantID",
+    "EA_TableCode",
+    "EA_ObjectID",
+    "EA_ChangeType",
+    "EA_ChangeTimeUTC",
+    "EA_Actor",
+    "EA_BeforeJson",
+    "EA_AfterJson",
+    "EA_PayloadHash",
+    "EA_HashChainPrev",
+    "EA_HashChainThis"
+  ],
+  "integrity": {
+    "hashAlgorithm": "SHA-256",
+    "hashChain": "recommended",
+    "externalAnchor": "recommended for high assurance"
+  }
+}

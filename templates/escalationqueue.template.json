@@ -1,0 +1,93 @@
+{
+  "templateType": "EscalationQueue",
+  "version": 1,
+  "mode": "Sidecar",
+  "idStrategy": "UUIDv7",
+  "key": [
+    "_TenantID",
+    "EQ_ObjectType",
+    "EQ_ObjectID",
+    "EQ_SignalCode",
+    "EQ_CreatedUTC"
+  ],
+  "columns": [
+    {
+      "name": "EQ_ID",
+      "logicalType": "UUIDv7",
+      "pk": true
+    },
+    {
+      "name": "_TenantID",
+      "logicalType": "UUIDv7",
+      "required": true
+    },
+    {
+      "name": "EQ_ObjectType",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "EQ_ObjectID",
+      "logicalType": "UUIDv7",
+      "required": true
+    },
+    {
+      "name": "EQ_SignalCode",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "EQ_Severity",
+      "logicalType": "String",
+      "required": false
+    },
+    {
+      "name": "EQ_AssignedToRole",
+      "logicalType": "String",
+      "required": false
+    },
+    {
+      "name": "EQ_AssignedToPrincipal",
+      "logicalType": "String",
+      "required": false
+    },
+    {
+      "name": "EQ_Status",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "EQ_CreatedUTC",
+      "logicalType": "DateTimeUTC",
+      "required": true
+    },
+    {
+      "name": "EQ_ClosedUTC",
+      "logicalType": "DateTimeUTC",
+      "required": false
+    },
+    {
+      "name": "EQ_Notes",
+      "logicalType": "String",
+      "required": false
+    }
+  ],
+  "indexes": [
+    {
+      "name": "ix_EQ_Open",
+      "on": [
+        "_TenantID",
+        "EQ_Status",
+        "EQ_CreatedUTC"
+      ]
+    },
+    {
+      "name": "ix_EQ_Object",
+      "on": [
+        "_TenantID",
+        "EQ_ObjectType",
+        "EQ_ObjectID"
+      ]
+    }
+  ]
+}

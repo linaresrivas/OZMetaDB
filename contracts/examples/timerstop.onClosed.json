@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "kind": "TimerStop",
+  "description": "Stop SLA when entering Closed state",
+  "expr": {
+    "op": "eq",
+    "args": [
+      {
+        "ref": "transition.toState"
+      },
+      {
+        "lit": "Closed",
+        "type": "string"
+      }
+    ]
+  }
+}

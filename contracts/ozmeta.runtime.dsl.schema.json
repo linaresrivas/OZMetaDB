@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ozmeta.runtime.dsl.schema.json",
+  "title": "OZMeta Runtime DSL",
+  "type": "object",
+  "required": [
+    "version",
+    "kind"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "Guard",
+        "Action",
+        "TimerStart",
+        "TimerStop",
+        "Escalation",
+        "Validation"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "expr": {
+      "$ref": "#/definitions/expr"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/action"
+      }
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "expr": {
+      "description": "Boolean or scalar expression tree",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/op"
+        },
+        {
+          "$ref": "#/definitions/literal"
+        },
+        {
+          "$ref": "#/definitions/ref"
+        }
+      ]
+    },
+    "literal": {
+      "type": "object",
+      "required": [
+        "lit"
+      ],
+      "properties": {
+        "lit": {},
+        "type": {
+          "type": "string",
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "datetime",
+            "uuid",
+            "json",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ref": {
+      "type": "object",
+      "required": [
+        "ref"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "description": "Reference path like object.field, user.role, now.utc, tenant.id, context.xxx"
+        },
+        "as": {
+          "type": "string",
+          "description": "Optional cast hint"
+        }
+      },
+      "additionalProperties": false
+    },
+    "op": {
+      "type": "object",
+      "required": [
+        "op",
+        "args"
+      ],
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": [
+            "and",
+            "or",
+            "not",
+            "eq",
+            "ne",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in",
+            "contains",
+            "startsWith",
+            "endsWith",
+            "isNull",
+            "isNotNull",
+            "add",
+            "sub",
+            "mul",
+            "div",
+            "coalesce",
+            "regex",
+            "dateAdd",
+            "dateDiffMinutes"
+          ]
+        },
+        "args": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/expr"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "action": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "SetField",
+            "EmitEvent",
+            "EmitSignal",
+            "EnqueueEscalation",
+            "Notify",
+            "UpsertRuntime",
+            "StartTimer",
+            "StopTimer"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "description": "Target field or runtime object path"
+        },
+        "value": {
+          "$ref": "#/definitions/expr"
+        },
+        "eventType": {
+          "type": "string"
+        },
+        "signalType": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

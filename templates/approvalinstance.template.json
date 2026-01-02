@@ -1,0 +1,64 @@
+{
+  "templateType": "ApprovalInstance",
+  "version": 1,
+  "mode": "Sidecar",
+  "idStrategy": "UUIDv7",
+  "key": [
+    "_TenantID",
+    "AI_ObjectType",
+    "AI_ObjectID",
+    "AF_Code"
+  ],
+  "columns": [
+    {
+      "name": "AI_ID",
+      "logicalType": "UUIDv7",
+      "pk": true
+    },
+    {
+      "name": "_TenantID",
+      "logicalType": "UUIDv7",
+      "required": true
+    },
+    {
+      "name": "AI_ObjectType",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "AI_ObjectID",
+      "logicalType": "UUIDv7",
+      "required": true
+    },
+    {
+      "name": "AF_Code",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "AI_CurrentStepOrder",
+      "logicalType": "Int64",
+      "required": true
+    },
+    {
+      "name": "AI_Status",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "AI_RequestedUTC",
+      "logicalType": "DateTimeUTC",
+      "required": true
+    },
+    {
+      "name": "AI_CompletedUTC",
+      "logicalType": "DateTimeUTC",
+      "required": false
+    },
+    {
+      "name": "AI_LastActor",
+      "logicalType": "String",
+      "required": false
+    }
+  ]
+}

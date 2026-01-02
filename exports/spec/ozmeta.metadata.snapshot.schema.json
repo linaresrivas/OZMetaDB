@@ -1,0 +1,384 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ozmeta.metadata.snapshot.schema.json",
+  "title": "OZMeta Metadata Snapshot",
+  "type": "object",
+  "required": [
+    "snapshotVersion",
+    "generatedAtUTC",
+    "clientCode",
+    "projectCode",
+    "objects"
+  ],
+  "properties": {
+    "snapshotVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "generatedAtUTC": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "clientCode": {
+      "type": "string"
+    },
+    "projectCode": {
+      "type": "string"
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "metadb": {
+          "type": "string",
+          "description": "Connection descriptor (no secrets) or identifier"
+        },
+        "modelVersion": {
+          "type": "integer"
+        },
+        "mapVersion": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": true
+    },
+    "objects": {
+      "type": "object",
+      "required": [
+        "ai",
+        "devops",
+        "dimensions",
+        "documents",
+        "enums",
+        "eventing",
+        "fields",
+        "ingestion",
+        "jobs",
+        "lifecycle",
+        "mappings",
+        "metrics",
+        "platform",
+        "quality",
+        "relations",
+        "runtime",
+        "security",
+        "semantic",
+        "sources",
+        "tables",
+        "templates",
+        "texts",
+        "workflows"
+      ],
+      "properties": {
+        "tables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/table"
+          }
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/field"
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/relation"
+          }
+        },
+        "workflows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/workflowPack"
+          }
+        },
+        "security": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "runtime": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "jobs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "texts": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "enums": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "sources": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "mappings": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "ingestion": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "quality": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "documents": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "eventing": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "semantic": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "ai": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "devops": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "platform": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "lifecycle": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "table": {
+      "type": "object",
+      "required": [
+        "tbId",
+        "schemaName",
+        "tableName",
+        "code",
+        "tableType"
+      ],
+      "properties": {
+        "tbId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "schemaName": {
+          "type": "string"
+        },
+        "tableName": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2
+        },
+        "tableType": {
+          "type": "string"
+        },
+        "textKey": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "flags": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "field": {
+      "type": "object",
+      "required": [
+        "fdId",
+        "tbId",
+        "fieldName",
+        "logicalType"
+      ],
+      "properties": {
+        "fdId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tbId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fieldName": {
+          "type": "string"
+        },
+        "logicalType": {
+          "type": "string"
+        },
+        "isPK": {
+          "type": "boolean"
+        },
+        "isFK": {
+          "type": "boolean"
+        },
+        "isInternal": {
+          "type": "boolean"
+        },
+        "isNullable": {
+          "type": "boolean"
+        },
+        "defaultRule": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "type": "string"
+        },
+        "textKey": {
+          "type": "string"
+        },
+        "enumCode": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "mask": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "relation": {
+      "type": "object",
+      "required": [
+        "fromFdId",
+        "toFdId"
+      ],
+      "properties": {
+        "fromFdId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "toFdId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "roleName": {
+          "type": "string"
+        },
+        "cardinality": {
+          "type": "string"
+        },
+        "enforceInDB": {
+          "type": "boolean"
+        },
+        "textKey": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "workflowPack": {
+      "type": "object",
+      "required": [
+        "workflow",
+        "states",
+        "transitions"
+      ],
+      "properties": {
+        "workflow": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "transitionRoles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "approvalFlows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "slas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

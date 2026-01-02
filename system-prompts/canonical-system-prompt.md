@@ -74,3 +74,36 @@ Do NOT invent new naming patterns.
 FINAL RULE
 If a cloud vendor disappears tomorrow:
 canonical definitions must remain valid; only adapters may change.
+
+
+UI + MULTI-LANGUAGE METADATA
+Every table/field/metric/enum/UI entity SHOULD have a TextKey and translations.
+Canonical names remain stable; UI display names are localized aliases.
+
+
+SECURITY METADATA
+All canonical objects should support: classification, RLS/FLS policies, and protection policies (encrypt/mask/tokenize/hash). Prefer deny-by-default and metadata-driven UI visibility.
+
+
+WORKFLOW / EVENTS
+Support metadata-driven workflows (states/transitions), approvals, SLAs, and immutable event journaling templates. Prefer append-only event journals and strong auditability.
+
+
+RUNTIME TRACKING
+Support runtime workflow tracking (current state, SLA timers, breaches, escalations, approval instances). Prefer Sidecar runtime tables and append-only events for integrity.
+
+
+RUNTIME DSL CONTRACT
+Portable JSON DSL rules MUST validate against contracts/ozmeta.runtime.dsl.schema.json. Compilers generate platform-specific expressions and actions.
+
+
+METADATA SNAPSHOT
+Support offline generation from exports/spec/ozmeta.metadata.snapshot.schema.json snapshots (for CI/CD). Loaders validate snapshot + DSL contracts before compilation.
+
+
+EXPORTER CONTRACT
+A deterministic SQL exporter must follow contracts/ozmeta.exporter.contract.json to produce snapshots compatible with exports/spec/ozmeta.metadata.snapshot.schema.json.
+
+
+FULL FIDELITY EXPORT
+Exporter contract should include workflows/states/transitions, security policies, and runtime bindings so snapshots can fully reproduce MetaDB-driven behavior.

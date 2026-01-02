@@ -1,0 +1,85 @@
+{
+  "templateType": "SlaTimer",
+  "version": 1,
+  "mode": "Sidecar",
+  "idStrategy": "UUIDv7",
+  "key": [
+    "_TenantID",
+    "WI_ID",
+    "SL_Code"
+  ],
+  "columns": [
+    {
+      "name": "ST_ID",
+      "logicalType": "UUIDv7",
+      "pk": true
+    },
+    {
+      "name": "_TenantID",
+      "logicalType": "UUIDv7",
+      "required": true
+    },
+    {
+      "name": "WI_ID",
+      "logicalType": "UUIDv7",
+      "required": true
+    },
+    {
+      "name": "SL_Code",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "ST_StartUTC",
+      "logicalType": "DateTimeUTC",
+      "required": true
+    },
+    {
+      "name": "ST_DueUTC",
+      "logicalType": "DateTimeUTC",
+      "required": true
+    },
+    {
+      "name": "ST_StopUTC",
+      "logicalType": "DateTimeUTC",
+      "required": false
+    },
+    {
+      "name": "ST_Status",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "ST_WarnedUTC",
+      "logicalType": "DateTimeUTC",
+      "required": false
+    },
+    {
+      "name": "ST_BreachedUTC",
+      "logicalType": "DateTimeUTC",
+      "required": false
+    },
+    {
+      "name": "ST_EscalationLevel",
+      "logicalType": "Int64",
+      "required": false
+    }
+  ],
+  "indexes": [
+    {
+      "name": "ix_ST_Due",
+      "on": [
+        "_TenantID",
+        "ST_Status",
+        "ST_DueUTC"
+      ]
+    },
+    {
+      "name": "ix_ST_WI",
+      "on": [
+        "_TenantID",
+        "WI_ID"
+      ]
+    }
+  ]
+}

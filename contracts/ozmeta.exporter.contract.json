@@ -1,0 +1,1703 @@
+{
+  "version": 1,
+  "name": "ozmeta.exporter.contract",
+  "description": "Deterministic contract for SQL exporter queries to produce snapshot JSON.",
+  "dialect": "TSQL",
+  "principles": [
+    "Each query returns a stable set of columns with stable names and types.",
+    "No secrets in results.",
+    "Filter by (CL_Code, PJ_Code) and _DeleteDate IS NULL by default.",
+    "Order results deterministically by primary natural keys."
+  ],
+  "parameters": {
+    "CL_Code": "nvarchar(50)",
+    "PJ_Code": "nvarchar(80)"
+  },
+  "queries": [
+    {
+      "name": "client_project_context",
+      "purpose": "Resolve CL_ID and PJ_ID and versions (optional).",
+      "sql": "SELECT c.CL_ID, c.CL_Code, p.PJ_ID, p.PJ_Code FROM Meta.Client c JOIN Meta.Project p ON p.CL_ID=c.CL_ID WHERE c.CL_Code=@CL_Code AND p.PJ_Code=@PJ_Code AND c._DeleteDate IS NULL AND p._DeleteDate IS NULL;",
+      "output": [
+        {
+          "name": "CL_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "CL_Code",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_Code",
+          "type": "nvarchar(80)"
+        }
+      ],
+      "orderBy": [
+        "CL_Code",
+        "PJ_Code"
+      ]
+    },
+    {
+      "name": "tables",
+      "purpose": "Canonical tables for project.",
+      "sql": "SELECT TB_ID, PJ_ID, TB_SchemaName, TB_TableName, CD_Code, TB_TableType, TB_TextKeyID, TB_Description, TB_IsActual, TB_IsForecast, TB_RequiresTenant, TB_SoftDeleteEnabled, TB_SourceTrackingEnabled FROM Meta.Table WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY TB_SchemaName, TB_TableName;",
+      "output": [
+        {
+          "name": "TB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TB_SchemaName",
+          "type": "nvarchar(128)"
+        },
+        {
+          "name": "TB_TableName",
+          "type": "nvarchar(128)"
+        },
+        {
+          "name": "CD_Code",
+          "type": "nchar(2)"
+        },
+        {
+          "name": "TB_TableType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "TB_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TB_Description",
+          "type": "nvarchar(2000)"
+        },
+        {
+          "name": "TB_IsActual",
+          "type": "bit"
+        },
+        {
+          "name": "TB_IsForecast",
+          "type": "bit"
+        },
+        {
+          "name": "TB_RequiresTenant",
+          "type": "bit"
+        },
+        {
+          "name": "TB_SoftDeleteEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "TB_SourceTrackingEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "TB_SchemaName",
+        "TB_TableName"
+      ]
+    },
+    {
+      "name": "fields",
+      "purpose": "Canonical fields for project tables.",
+      "sql": "SELECT f.FD_ID, f.TB_ID, f.FD_FieldName, f.LT_Code, f.FD_IsPK, f.FD_IsFK, f.FD_IsInternal, f.FD_IsNullable, f.FD_DefaultRule, f.FD_Sensitivity, f.FD_TextKeyID, e.EN_Code AS EnumCode, f.FD_Format, f.FD_Mask, f.FD_Description FROM Meta.Field f JOIN Meta.Table t ON t.TB_ID=f.TB_ID AND t._DeleteDate IS NULL LEFT JOIN Meta.Enum e ON e.EN_ID=f.FD_EnumID AND e._DeleteDate IS NULL WHERE t.PJ_ID=@PJ_ID AND f._DeleteDate IS NULL ORDER BY t.TB_SchemaName, t.TB_TableName, f.FD_FieldName;",
+      "output": [
+        {
+          "name": "FD_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FD_FieldName",
+          "type": "nvarchar(128)"
+        },
+        {
+          "name": "LT_Code",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "FD_IsPK",
+          "type": "bit"
+        },
+        {
+          "name": "FD_IsFK",
+          "type": "bit"
+        },
+        {
+          "name": "FD_IsInternal",
+          "type": "bit"
+        },
+        {
+          "name": "FD_IsNullable",
+          "type": "bit"
+        },
+        {
+          "name": "FD_DefaultRule",
+          "type": "nvarchar(400)"
+        },
+        {
+          "name": "FD_Sensitivity",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "FD_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "EnumCode",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "FD_Format",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "FD_Mask",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "FD_Description",
+          "type": "nvarchar(2000)"
+        }
+      ],
+      "orderBy": [
+        "TB_SchemaName",
+        "TB_TableName",
+        "FD_FieldName"
+      ]
+    },
+    {
+      "name": "relations",
+      "purpose": "Relations between canonical fields.",
+      "sql": "SELECT RL_ID, RL_FromFD_ID, RL_ToFD_ID, RL_RoleName, RL_Cardinality, RL_EnforceInDB, RL_TextKeyID, RL_Description FROM Meta.Relation WHERE _DeleteDate IS NULL AND (RL_FromFD_ID IN (SELECT FD_ID FROM Meta.Field f JOIN Meta.Table t ON t.TB_ID=f.TB_ID WHERE t.PJ_ID=@PJ_ID AND t._DeleteDate IS NULL AND f._DeleteDate IS NULL));",
+      "output": [
+        {
+          "name": "RL_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RL_FromFD_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RL_ToFD_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RL_RoleName",
+          "type": "nvarchar(100)"
+        },
+        {
+          "name": "RL_Cardinality",
+          "type": "nvarchar(20)"
+        },
+        {
+          "name": "RL_EnforceInDB",
+          "type": "bit"
+        },
+        {
+          "name": "RL_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RL_Description",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "RL_ID"
+      ]
+    },
+    {
+      "name": "texts",
+      "purpose": "Languages, TextKeys, Translations used in project scope.",
+      "sql": "SELECT LG_Code, LG_Name, LG_IsDefault FROM Meta.Language WHERE _DeleteDate IS NULL AND LG_IsEnabled=1 ORDER BY LG_IsDefault DESC, LG_Code;",
+      "output": [
+        {
+          "name": "LG_Code",
+          "type": "nvarchar(20)"
+        },
+        {
+          "name": "LG_Name",
+          "type": "nvarchar(100)"
+        },
+        {
+          "name": "LG_IsDefault",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "LG_IsDefault DESC",
+        "LG_Code"
+      ]
+    },
+    {
+      "name": "workflows",
+      "purpose": "Workflows for project.",
+      "sql": "SELECT WF_ID, PJ_ID, WF_Code, WF_ObjectType, WF_ObjectID, WF_TextKeyID, WF_IsEnabled, WF_Notes FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY WF_Code;",
+      "output": [
+        {
+          "name": "WF_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WF_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "WF_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "WF_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WF_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WF_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "WF_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "WF_Code"
+      ]
+    },
+    {
+      "name": "workflow_states",
+      "purpose": "Workflow states for workflows in project.",
+      "sql": "SELECT WS_ID, WF_ID, WS_Code, WS_IsStart, WS_IsTerminal, WS_TextKeyID, WS_Notes FROM Meta.WorkflowState WHERE _DeleteDate IS NULL AND WF_ID IN (SELECT WF_ID FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY WF_ID, WS_Code;",
+      "output": [
+        {
+          "name": "WS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WF_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WS_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "WS_IsStart",
+          "type": "bit"
+        },
+        {
+          "name": "WS_IsTerminal",
+          "type": "bit"
+        },
+        {
+          "name": "WS_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WS_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "WF_ID",
+        "WS_Code"
+      ]
+    },
+    {
+      "name": "workflow_transitions",
+      "purpose": "Workflow transitions for workflows in project.",
+      "sql": "SELECT WT_ID, WF_ID, WT_FromWS_ID, WT_ToWS_ID, WT_Code, WT_TextKeyID, WT_GuardLogical, WT_ActionLogical, WT_IsEnabled, WT_Notes FROM Meta.WorkflowTransition WHERE _DeleteDate IS NULL AND WF_ID IN (SELECT WF_ID FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY WF_ID, WT_Code;",
+      "output": [
+        {
+          "name": "WT_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WF_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WT_FromWS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WT_ToWS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WT_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "WT_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WT_GuardLogical",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "WT_ActionLogical",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "WT_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "WT_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "WF_ID",
+        "WT_Code"
+      ]
+    },
+    {
+      "name": "workflow_transition_roles",
+      "purpose": "Roles allowed for transitions.",
+      "sql": "SELECT WTR_ID, WT_ID, RO_ID, WTR_Notes FROM Meta.WorkflowTransitionRole WHERE _DeleteDate IS NULL AND WT_ID IN (SELECT WT_ID FROM Meta.WorkflowTransition WHERE _DeleteDate IS NULL AND WF_ID IN (SELECT WF_ID FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL)) ORDER BY WT_ID;",
+      "output": [
+        {
+          "name": "WTR_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WT_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RO_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WTR_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "WT_ID"
+      ]
+    },
+    {
+      "name": "security_policies",
+      "purpose": "Security policies (RLS/FLS/ABAC) for project.",
+      "sql": "SELECT SP_ID, PJ_ID, SP_Code, SP_Type, SP_TextKeyID, SP_ExpressionLogical, SP_IsEnabled, SP_Notes FROM Meta.SecurityPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY SP_Code;",
+      "output": [
+        {
+          "name": "SP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SP_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "SP_Type",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SP_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SP_ExpressionLogical",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "SP_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "SP_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "SP_Code"
+      ]
+    },
+    {
+      "name": "table_security",
+      "purpose": "TableSecurity bindings for project.",
+      "sql": "SELECT TS_ID, TB_ID, SP_ID, TS_Mode, TS_Notes FROM Meta.TableSecurity WHERE _DeleteDate IS NULL AND TB_ID IN (SELECT TB_ID FROM Meta.Table WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY TB_ID;",
+      "output": [
+        {
+          "name": "TS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TS_Mode",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "TS_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "TB_ID"
+      ]
+    },
+    {
+      "name": "field_security",
+      "purpose": "FieldSecurity bindings for project.",
+      "sql": "SELECT FS_ID, FD_ID, SP_ID, FS_Action, FS_Notes FROM Meta.FieldSecurity WHERE _DeleteDate IS NULL AND FD_ID IN (SELECT f.FD_ID FROM Meta.Field f JOIN Meta.Table t ON t.TB_ID=f.TB_ID WHERE t.PJ_ID=@PJ_ID AND t._DeleteDate IS NULL AND f._DeleteDate IS NULL) ORDER BY FD_ID;",
+      "output": [
+        {
+          "name": "FS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FD_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FS_Action",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "FS_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "FD_ID"
+      ]
+    },
+    {
+      "name": "data_protection_policies",
+      "purpose": "DataProtectionPolicy for project.",
+      "sql": "SELECT DP_ID, PJ_ID, DP_Code, DP_Type, DP_TextKeyID, DP_Algorithm, DP_KeyRef, DP_ExpressionLogical, DP_IsEnabled, DP_Notes FROM Meta.DataProtectionPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY DP_Code;",
+      "output": [
+        {
+          "name": "DP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DP_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "DP_Type",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "DP_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DP_Algorithm",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "DP_KeyRef",
+          "type": "nvarchar(500)"
+        },
+        {
+          "name": "DP_ExpressionLogical",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "DP_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "DP_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "DP_Code"
+      ]
+    },
+    {
+      "name": "field_protection",
+      "purpose": "FieldProtection bindings for project fields.",
+      "sql": "SELECT FP_ID, FD_ID, DP_ID, FP_Mode, FP_Notes FROM Meta.FieldProtection WHERE _DeleteDate IS NULL AND FD_ID IN (SELECT f.FD_ID FROM Meta.Field f JOIN Meta.Table t ON t.TB_ID=f.TB_ID WHERE t.PJ_ID=@PJ_ID AND t._DeleteDate IS NULL AND f._DeleteDate IS NULL) ORDER BY FD_ID;",
+      "output": [
+        {
+          "name": "FP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FD_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FP_Mode",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "FP_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "FD_ID"
+      ]
+    },
+    {
+      "name": "runtime_bindings",
+      "purpose": "RuntimeBinding for project.",
+      "sql": "SELECT RB_ID, PJ_ID, RB_ObjectType, RB_ObjectID, WF_ID, AF_ID, RB_RuntimeMode, RB_InstanceKeyStrategy, RB_TextKeyID, RB_IsEnabled, RB_Notes FROM Meta.RuntimeBinding WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY RB_ObjectType, RB_ObjectID;",
+      "output": [
+        {
+          "name": "RB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RB_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "RB_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "WF_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "AF_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RB_RuntimeMode",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "RB_InstanceKeyStrategy",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "RB_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RB_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "RB_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "RB_ObjectType",
+        "RB_ObjectID"
+      ]
+    },
+    {
+      "name": "runtime_sla_bindings",
+      "purpose": "RuntimeSlaBinding rules for project runtime bindings.",
+      "sql": "SELECT RSB_ID, RB_ID, SL_ID, RSB_StartRule, RSB_StopRule, RSB_Notes FROM Meta.RuntimeSlaBinding WHERE _DeleteDate IS NULL AND RB_ID IN (SELECT RB_ID FROM Meta.RuntimeBinding WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY RB_ID;",
+      "output": [
+        {
+          "name": "RSB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SL_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RSB_StartRule",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "RSB_StopRule",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "RSB_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "RB_ID"
+      ]
+    },
+    {
+      "name": "runtime_signal_types",
+      "purpose": "RuntimeSignalType catalog for project.",
+      "sql": "SELECT RST_ID, PJ_ID, RST_Code, RST_TextKeyID, RST_Severity, RST_DefaultRetentionDays, RST_Notes FROM Meta.RuntimeSignalType WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY RST_Code;",
+      "output": [
+        {
+          "name": "RST_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RST_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "RST_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RST_Severity",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "RST_DefaultRetentionDays",
+          "type": "int"
+        },
+        {
+          "name": "RST_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "RST_Code"
+      ]
+    },
+    {
+      "name": "sla_policies",
+      "purpose": "SLA policies for project.",
+      "sql": "SELECT SL_ID, PJ_ID, SL_Code, SL_ObjectType, SL_ObjectID, SL_TextKeyID, SL_TargetMinutes, SL_WarnMinutes, SL_EscalationRule, SL_IsEnabled, SL_Notes FROM Meta.SlaPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY SL_Code;",
+      "output": [
+        {
+          "name": "SL_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SL_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "SL_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SL_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SL_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SL_TargetMinutes",
+          "type": "int"
+        },
+        {
+          "name": "SL_WarnMinutes",
+          "type": "int"
+        },
+        {
+          "name": "SL_EscalationRule",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "SL_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "SL_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "SL_Code"
+      ]
+    },
+    {
+      "name": "roles",
+      "purpose": "Roles for project.",
+      "sql": "SELECT RO_ID, PJ_ID, RO_Code, RO_TextKeyID, RO_Notes FROM Meta.Role WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY RO_Code;",
+      "output": [
+        {
+          "name": "RO_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RO_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "RO_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RO_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "RO_Code"
+      ]
+    },
+    {
+      "name": "source_systems",
+      "purpose": "Source systems for project.",
+      "sql": "SELECT SS_ID, PJ_ID, SS_Code, SS_Type, SS_TextKeyID, SS_Owner, SS_TrustLevel, SS_AuthProfileRef, SS_ConfigJSON, SS_IsEnabled, SS_Notes FROM Meta.SourceSystem WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY SS_Code;",
+      "output": [
+        {
+          "name": "SS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SS_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "SS_Type",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SS_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SS_Owner",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "SS_TrustLevel",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SS_AuthProfileRef",
+          "type": "nvarchar(500)"
+        },
+        {
+          "name": "SS_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "SS_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "SS_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "SS_Code"
+      ]
+    },
+    {
+      "name": "source_objects",
+      "purpose": "Source objects for project sources.",
+      "sql": "SELECT SO_ID, SS_ID, SO_ObjectType, SO_SchemaName, SO_ObjectName, SO_PrimaryKeySpec, SO_TextKeyID, SO_ConfigJSON FROM Meta.SourceObject WHERE _DeleteDate IS NULL AND SS_ID IN (SELECT SS_ID FROM Meta.SourceSystem WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY SS_ID, SO_ObjectName;",
+      "output": [
+        {
+          "name": "SO_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SO_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SO_SchemaName",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "SO_ObjectName",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "SO_PrimaryKeySpec",
+          "type": "nvarchar(500)"
+        },
+        {
+          "name": "SO_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SO_ConfigJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "SS_ID",
+        "SO_ObjectName"
+      ]
+    },
+    {
+      "name": "source_fields",
+      "purpose": "Source fields for project source objects.",
+      "sql": "SELECT SF_ID, SO_ID, SF_FieldName, SF_DataType, SF_IsNullable, SF_TextKeyID, SF_Description, SF_ConfigJSON FROM Meta.SourceField WHERE _DeleteDate IS NULL AND SO_ID IN (SELECT SO_ID FROM Meta.SourceObject WHERE _DeleteDate IS NULL AND SS_ID IN (SELECT SS_ID FROM Meta.SourceSystem WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL)) ORDER BY SO_ID, SF_FieldName;",
+      "output": [
+        {
+          "name": "SF_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SO_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SF_FieldName",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "SF_DataType",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "SF_IsNullable",
+          "type": "bit"
+        },
+        {
+          "name": "SF_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SF_Description",
+          "type": "nvarchar(2000)"
+        },
+        {
+          "name": "SF_ConfigJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "SO_ID",
+        "SF_FieldName"
+      ]
+    },
+    {
+      "name": "map_versions",
+      "purpose": "Mapping versions for project.",
+      "sql": "SELECT MV_ID, PJ_ID, MV_Code, MV_Version, MV_Status, MV_Notes FROM Meta.MapVersion WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY MV_Code, MV_Version;",
+      "output": [
+        {
+          "name": "MV_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "MV_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "MV_Version",
+          "type": "int"
+        },
+        {
+          "name": "MV_Status",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "MV_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "MV_Code",
+        "MV_Version"
+      ]
+    },
+    {
+      "name": "map_fields",
+      "purpose": "Field mappings for mapping versions.",
+      "sql": "SELECT MF_ID, MV_ID, SF_ID, FD_ID, MF_TransformDSL, MF_QualityRuleDSL, MF_SurvivorshipDSL, MF_Notes FROM Meta.MapField WHERE _DeleteDate IS NULL AND MV_ID IN (SELECT MV_ID FROM Meta.MapVersion WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY MV_ID;",
+      "output": [
+        {
+          "name": "MF_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "MV_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SF_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FD_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "MF_TransformDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "MF_QualityRuleDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "MF_SurvivorshipDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "MF_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "MV_ID"
+      ]
+    },
+    {
+      "name": "ingestion_specs",
+      "purpose": "Ingestion specs for mapping versions.",
+      "sql": "SELECT IS_ID, MV_ID, SO_ID, IS_Mode, IS_CdcSpecJSON, IS_ScheduleSpec, IS_DedupeDSL, IS_ConflictDSL, IS_OutputTarget, IS_Notes FROM Meta.IngestionSpec WHERE _DeleteDate IS NULL AND MV_ID IN (SELECT MV_ID FROM Meta.MapVersion WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY MV_ID;",
+      "output": [
+        {
+          "name": "IS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "MV_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SO_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "IS_Mode",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "IS_CdcSpecJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "IS_ScheduleSpec",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "IS_DedupeDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "IS_ConflictDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "IS_OutputTarget",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "IS_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "MV_ID"
+      ]
+    },
+    {
+      "name": "dq_rules",
+      "purpose": "Data quality rules for project.",
+      "sql": "SELECT DQ_ID, PJ_ID, DQ_Code, DQ_ObjectType, DQ_ObjectID, DQ_Severity, DQ_RuleDSL, DQ_RemediationDSL, DQ_TextKeyID, DQ_IsEnabled, DQ_Notes FROM Meta.DataQualityRule WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY DQ_Code;",
+      "output": [
+        {
+          "name": "DQ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DQ_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "DQ_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "DQ_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DQ_Severity",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "DQ_RuleDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "DQ_RemediationDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "DQ_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DQ_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "DQ_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "DQ_Code"
+      ]
+    },
+    {
+      "name": "dataset_certifications",
+      "purpose": "Dataset certifications for project.",
+      "sql": "SELECT DC_ID, PJ_ID, DC_ObjectType, DC_ObjectID, CF_Code, DC_TextKeyID, DC_Notes, DC_EffectiveUTC FROM Meta.DatasetCertification WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY DC_EffectiveUTC DESC;",
+      "output": [
+        {
+          "name": "DC_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DC_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "DC_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "CF_Code",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "DC_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DC_Notes",
+          "type": "nvarchar(1000)"
+        },
+        {
+          "name": "DC_EffectiveUTC",
+          "type": "datetime2(3)"
+        }
+      ],
+      "orderBy": [
+        "DC_EffectiveUTC DESC"
+      ]
+    },
+    {
+      "name": "document_types",
+      "purpose": "Document types for project.",
+      "sql": "SELECT DT_ID, PJ_ID, DT_Code, DT_TextKeyID, DT_ConfigJSON, DT_IsEnabled, DT_Notes FROM Meta.DocumentType WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY DT_Code;",
+      "output": [
+        {
+          "name": "DT_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DT_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "DT_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DT_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "DT_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "DT_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "DT_Code"
+      ]
+    },
+    {
+      "name": "redaction_policies",
+      "purpose": "Redaction policies for project.",
+      "sql": "SELECT RP_ID, PJ_ID, RP_Code, RP_RuleDSL, RP_TextKeyID, RP_IsEnabled, RP_Notes FROM Meta.RedactionPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY RP_Code;",
+      "output": [
+        {
+          "name": "RP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RP_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "RP_RuleDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "RP_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RP_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "RP_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "RP_Code"
+      ]
+    },
+    {
+      "name": "event_buses",
+      "purpose": "Event buses for project.",
+      "sql": "SELECT EB_ID, PJ_ID, EB_Code, EB_Provider, EB_ConfigRef, EB_ConfigJSON, EB_IsEnabled FROM Meta.EventBus WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY EB_Code;",
+      "output": [
+        {
+          "name": "EB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "EB_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "EB_Provider",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "EB_ConfigRef",
+          "type": "nvarchar(500)"
+        },
+        {
+          "name": "EB_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "EB_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "EB_Code"
+      ]
+    },
+    {
+      "name": "event_channels",
+      "purpose": "Event channels for project event buses.",
+      "sql": "SELECT EC_ID, EB_ID, EC_Code, EC_Mode, EC_TextKeyID, EC_ConfigJSON FROM Meta.EventChannel WHERE _DeleteDate IS NULL AND EB_ID IN (SELECT EB_ID FROM Meta.EventBus WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY EB_ID, EC_Code;",
+      "output": [
+        {
+          "name": "EC_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "EB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "EC_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "EC_Mode",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "EC_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "EC_ConfigJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "EB_ID",
+        "EC_Code"
+      ]
+    },
+    {
+      "name": "event_subscriptions",
+      "purpose": "Event subscriptions for project channels.",
+      "sql": "SELECT ES_ID, EC_ID, ES_ConsumerCode, ES_FilterDSL, ES_DeliverySpec, ES_IsEnabled FROM Meta.EventSubscription WHERE _DeleteDate IS NULL AND EC_ID IN (SELECT EC_ID FROM Meta.EventChannel WHERE _DeleteDate IS NULL AND EB_ID IN (SELECT EB_ID FROM Meta.EventBus WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL)) ORDER BY EC_ID, ES_ConsumerCode;",
+      "output": [
+        {
+          "name": "ES_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "EC_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "ES_ConsumerCode",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "ES_FilterDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "ES_DeliverySpec",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "ES_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "EC_ID",
+        "ES_ConsumerCode"
+      ]
+    },
+    {
+      "name": "semantic_models",
+      "purpose": "Semantic models for project.",
+      "sql": "SELECT SM_ID, PJ_ID, SM_Code, SM_Platform, SM_TextKeyID, SM_ConfigJSON, SM_IsEnabled, SM_Notes FROM Meta.SemanticModel WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY SM_Code;",
+      "output": [
+        {
+          "name": "SM_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SM_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "SM_Platform",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SM_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SM_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "SM_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "SM_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "SM_Code"
+      ]
+    },
+    {
+      "name": "semantic_measures",
+      "purpose": "Semantic measures for project semantic models.",
+      "sql": "SELECT SMR_ID, SM_ID, SMR_Code, SMR_Expression, SMR_Format, SMR_TextKeyID, SMR_Notes FROM Meta.SemanticMeasure WHERE _DeleteDate IS NULL AND SM_ID IN (SELECT SM_ID FROM Meta.SemanticModel WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY SM_ID, SMR_Code;",
+      "output": [
+        {
+          "name": "SMR_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SM_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SMR_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "SMR_Expression",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "SMR_Format",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "SMR_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SMR_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "SM_ID",
+        "SMR_Code"
+      ]
+    },
+    {
+      "name": "features",
+      "purpose": "AI features for project.",
+      "sql": "SELECT FT_ID, PJ_ID, FT_Code, FT_EntityType, FT_ExpressionDSL, FT_FreshnessMin, FT_TextKeyID, FT_IsEnabled, FT_Notes FROM Meta.FeatureDef WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY FT_Code;",
+      "output": [
+        {
+          "name": "FT_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FT_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "FT_EntityType",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "FT_ExpressionDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "FT_FreshnessMin",
+          "type": "int"
+        },
+        {
+          "name": "FT_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FT_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "FT_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "FT_Code"
+      ]
+    },
+    {
+      "name": "models",
+      "purpose": "Model registry for project.",
+      "sql": "SELECT ML_ID, PJ_ID, ML_Code, ML_Type, ML_Version, ML_TextKeyID, ML_LineageJSON, ML_RiskControlsJSON, ML_IsEnabled, ML_Notes FROM Meta.ModelRegistry WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY ML_Code, ML_Version;",
+      "output": [
+        {
+          "name": "ML_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "ML_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "ML_Type",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "ML_Version",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "ML_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "ML_LineageJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "ML_RiskControlsJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "ML_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "ML_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "ML_Code",
+        "ML_Version"
+      ]
+    },
+    {
+      "name": "environments",
+      "purpose": "Environments for project.",
+      "sql": "SELECT EV_ID, PJ_ID, EV_Code, EV_Type, EV_Region, EV_Platform, EV_ConfigJSON, EV_IsEnabled FROM Meta.Environment WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY EV_Code;",
+      "output": [
+        {
+          "name": "EV_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "EV_Code",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "EV_Type",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "EV_Region",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "EV_Platform",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "EV_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "EV_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "EV_Code"
+      ]
+    },
+    {
+      "name": "deployments",
+      "purpose": "Deployment specs for project.",
+      "sql": "SELECT DS_ID, PJ_ID, DS_Code, DS_ConfigJSON, DS_Notes FROM Meta.DeploymentSpec WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY DS_Code;",
+      "output": [
+        {
+          "name": "DS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DS_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "DS_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "DS_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "DS_Code"
+      ]
+    },
+    {
+      "name": "platform_service_map",
+      "purpose": "Platform service equivalence map.",
+      "sql": "SELECT PSM_ID, PSM_Capability, PSM_Azure, PSM_AWS, PSM_GCP, PSM_Notes FROM Meta.PlatformServiceMap ORDER BY PSM_Capability;",
+      "output": [
+        {
+          "name": "PSM_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PSM_Capability",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "PSM_Azure",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "PSM_AWS",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "PSM_GCP",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "PSM_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "PSM_Capability"
+      ]
+    },
+    {
+      "name": "dr_topologies",
+      "purpose": "DR topology for project.",
+      "sql": "SELECT DR_ID, PJ_ID, DR_Code, DR_ConfigJSON, DR_Notes FROM Meta.DrTopology WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY DR_Code;",
+      "output": [
+        {
+          "name": "DR_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DR_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "DR_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "DR_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "DR_Code"
+      ]
+    },
+    {
+      "name": "change_requests",
+      "purpose": "Metadata change requests for project.",
+      "sql": "SELECT CR_ID, PJ_ID, CR_Code, CR_Title, CR_Status, CR_RiskLevel, CR_ImpactJSON, CR_Notes FROM Meta.ChangeRequest WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY CR_Code;",
+      "output": [
+        {
+          "name": "CR_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "CR_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "CR_Title",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "CR_Status",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "CR_RiskLevel",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "CR_ImpactJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "CR_Notes",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "CR_Code"
+      ]
+    }
+  ],
+  "notes": [
+    "Additional queries can be added for workflows, approvals, SLAs, security policies, runtime bindings, metrics, dimensions, enums, templates, jobs, mappings, sources.",
+    "Exporter should be deterministic: stable ordering and stable field selection."
+  ]
+}

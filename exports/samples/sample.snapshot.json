@@ -1,0 +1,86 @@
+{
+  "snapshotVersion": 1,
+  "generatedAtUTC": "2026-01-02T05:35:53Z",
+  "clientCode": "SFO",
+  "projectCode": "CaseMgmt",
+  "source": {
+    "metadb": "OZMetaDB",
+    "modelVersion": 1,
+    "mapVersion": 1
+  },
+  "objects": {
+    "tables": [],
+    "fields": [],
+    "relations": [],
+    "workflows": [],
+    "security": {
+      "policies": [],
+      "tableSecurity": [],
+      "fieldSecurity": [],
+      "dataProtectionPolicies": [],
+      "fieldProtection": [],
+      "roles": []
+    },
+    "runtime": {
+      "bindings": [],
+      "slaBindings": [],
+      "signalTypes": []
+    },
+    "metrics": [],
+    "dimensions": [],
+    "jobs": [],
+    "templates": [],
+    "texts": {
+      "languages": [
+        "en-US"
+      ],
+      "textKeys": [],
+      "translations": []
+    },
+    "enums": [],
+    "sources": {
+      "sourceSystems": [],
+      "sourceObjects": [],
+      "sourceFields": []
+    },
+    "mappings": {
+      "mapVersions": [],
+      "mapFields": []
+    },
+    "ingestion": {
+      "ingestionSpecs": []
+    },
+    "quality": {
+      "rules": [],
+      "certifications": []
+    },
+    "documents": {
+      "documentTypes": [],
+      "redactionPolicies": []
+    },
+    "eventing": {
+      "eventBuses": [],
+      "channels": [],
+      "subscriptions": []
+    },
+    "semantic": {
+      "semanticModels": [],
+      "measures": []
+    },
+    "ai": {
+      "features": [],
+      "models": []
+    },
+    "devops": {
+      "environments": [],
+      "deployments": []
+    },
+    "platform": {
+      "serviceMap": [],
+      "drTopologies": []
+    },
+    "lifecycle": {
+      "changeRequests": []
+    }
+  }
+}

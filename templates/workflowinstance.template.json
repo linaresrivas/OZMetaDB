@@ -1,0 +1,87 @@
+{
+  "templateType": "WorkflowInstance",
+  "version": 1,
+  "mode": "Sidecar",
+  "idStrategy": "UUIDv7",
+  "key": [
+    "_TenantID",
+    "WI_ObjectType",
+    "WI_ObjectID"
+  ],
+  "columns": [
+    {
+      "name": "WI_ID",
+      "logicalType": "UUIDv7",
+      "pk": true
+    },
+    {
+      "name": "_TenantID",
+      "logicalType": "UUIDv7",
+      "required": true
+    },
+    {
+      "name": "WI_ObjectType",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "WI_ObjectID",
+      "logicalType": "UUIDv7",
+      "required": true
+    },
+    {
+      "name": "WF_ID",
+      "logicalType": "UUIDv7",
+      "required": false
+    },
+    {
+      "name": "WS_CurrentCode",
+      "logicalType": "String",
+      "required": true
+    },
+    {
+      "name": "WI_CurrentSinceUTC",
+      "logicalType": "DateTimeUTC",
+      "required": true
+    },
+    {
+      "name": "WI_LastTransitionCode",
+      "logicalType": "String",
+      "required": false
+    },
+    {
+      "name": "WI_LastTransitionUTC",
+      "logicalType": "DateTimeUTC",
+      "required": false
+    },
+    {
+      "name": "WI_LastActor",
+      "logicalType": "String",
+      "required": false
+    },
+    {
+      "name": "WI_RowVersion",
+      "logicalType": "Int64",
+      "required": false,
+      "notes": "platform-specific rowversion/etag"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "ix_WI_Tenant_Object",
+      "on": [
+        "_TenantID",
+        "WI_ObjectType",
+        "WI_ObjectID"
+      ],
+      "unique": true
+    },
+    {
+      "name": "ix_WI_State",
+      "on": [
+        "_TenantID",
+        "WS_CurrentCode"
+      ]
+    }
+  ]
+}

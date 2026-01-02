@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "kind": "Action",
+  "description": "On approve: set status, emit event, start SLA timer",
+  "actions": [
+    {
+      "type": "SetField",
+      "target": "object.CaseStatus",
+      "value": {
+        "lit": "Approved",
+        "type": "string"
+      }
+    },
+    {
+      "type": "EmitEvent",
+      "eventType": "Case.Approved",
+      "payload": {
+        "note": "approved via transition"
+      }
+    },
+    {
+      "type": "StartTimer",
+      "target": "SLA.CaseResponse",
+      "value": {
+        "ref": "now.utc"
+      }
+    }
+  ]
+}

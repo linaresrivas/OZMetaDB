@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "kind": "Guard",
+  "description": "Allow approve only if user has Supervisor role and case is Submitted",
+  "expr": {
+    "op": "and",
+    "args": [
+      {
+        "op": "eq",
+        "args": [
+          {
+            "ref": "object.CaseStatus"
+          },
+          {
+            "lit": "Submitted",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "in",
+        "args": [
+          {
+            "lit": "Supervisor",
+            "type": "string"
+          },
+          {
+            "ref": "user.roles"
+          }
+        ]
+      }
+    ]
+  }
+}

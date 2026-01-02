@@ -96,3 +96,7 @@ Pattern: `noun_verb` (lowercase)
 Examples: `invoice_create, invoice_close, transaction_archive`
 
 Optional schemas: `api.*`, `admin.*`, `sync.*`
+
+## UI aliases (recommended)
+Canonical object/field names remain stable.
+UI display names, tooltips, and translations are stored in MetaDB and served by language/locale.

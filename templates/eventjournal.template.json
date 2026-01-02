@@ -1,0 +1,33 @@
+{
+  "templateType": "EventJournal",
+  "version": 1,
+  "idStrategy": "UUIDv7",
+  "requiredColumns": [
+    "EJ_ID",
+    "_TenantID",
+    "EJ_EventType",
+    "EJ_EventTimeUTC",
+    "EJ_Actor",
+    "EJ_ObjectType",
+    "EJ_ObjectID",
+    "EJ_CorrelationID",
+    "EJ_CausationID",
+    "EJ_SourceSystem",
+    "EJ_SourceKey",
+    "EJ_Payload",
+    "EJ_PayloadHash",
+    "EJ_Sequence"
+  ],
+  "payloadTypeByPlatform": {
+    "AzureSQL": "nvarchar(max) JSON",
+    "FabricWarehouse": "string JSON",
+    "Databricks": "string JSON",
+    "BigQuery": "JSON",
+    "Redshift": "varchar(max) JSON"
+  },
+  "integrity": {
+    "hashAlgorithm": "SHA-256",
+    "hashChain": "optional",
+    "externalAnchor": "optional"
+  }
+}
