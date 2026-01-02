@@ -200,7 +200,11 @@ def export_snapshot(connection: Any, ctx: ExportContext) -> Dict[str, Any]:
 "ai": {"features": features, "models": models},
 "devops": {"environments": environments, "deployments": deployments},
 "platform": {"serviceMap": platform_service_map, "drTopologies": dr_topologies},
-"lifecycle": {"changeRequests": change_requests}
+"lifecycle": {"changeRequests": change_requests},
+            "ui": {"apps": ui_apps, "pages": ui_pages, "components": ui_components, "pageComponents": ui_page_components, "validationRules": ui_validation_rules, "searchFacets": ui_search_facets},
+            "lineage": {"assets": lineage_assets, "edges": lineage_edges, "jobRuns": job_runs, "jobRunAssets": job_run_assets},
+            "sync": {"policies": sync_policies},
+            "biModel": {"facts": bi_facts, "dimensions": bi_dimensions, "partitions": bi_partitions}
 
         }
     }

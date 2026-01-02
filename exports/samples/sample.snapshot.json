@@ -81,6 +81,28 @@
     },
     "lifecycle": {
       "changeRequests": []
+    },
+    "ui": {
+      "apps": [],
+      "pages": [],
+      "components": [],
+      "pageComponents": [],
+      "validationRules": [],
+      "searchFacets": []
+    },
+    "lineage": {
+      "assets": [],
+      "edges": [],
+      "jobRuns": [],
+      "jobRunAssets": []
+    },
+    "sync": {
+      "policies": []
+    },
+    "biModel": {
+      "facts": [],
+      "dimensions": [],
+      "partitions": []
     }
   }
 }

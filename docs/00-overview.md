@@ -30,3 +30,5 @@ See also: `docs/14-metadata-export-format.md` for snapshot export format.
 See also: `docs/15-exporter-contract.md` for deterministic exporter contract.
 
 See also: `docs/16-roadmap-priorities.md` for prioritization roadmap.
+
+See also: `docs/17-next-expansion-ui-lineage-sync-bi.md` for UI/lineage/offline/BI expansions.

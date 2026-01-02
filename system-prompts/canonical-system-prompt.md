@@ -107,3 +107,23 @@ A deterministic SQL exporter must follow contracts/ozmeta.exporter.contract.json
 
 FULL FIDELITY EXPORT
 Exporter contract should include workflows/states/transitions, security policies, and runtime bindings so snapshots can fully reproduce MetaDB-driven behavior.
+
+
+UI/UX GENERATION
+Support metadata-driven UI apps/pages/components, validation rules, and search facets.
+
+
+LINEAGE/OBSERVABILITY
+Support data asset lineage graph and deterministic job run observability.
+
+
+OFFLINE SYNC
+Support offline-first sync policies and conflict resolution via portable DSL.
+
+
+BI DEEP MODEL
+Support fact/dimension modeling (grain, SCD) and partition strategy specs.
+
+
+EVIDENCE INTEGRITY
+Support retention and document integrity policies (hash/signed/hashchain/WORM) for evidence.

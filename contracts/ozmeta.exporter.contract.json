@@ -1694,6 +1694,655 @@
       "orderBy": [
         "CR_Code"
       ]
+    },
+    {
+      "name": "ui_apps",
+      "purpose": "UI apps for project.",
+      "sql": "SELECT UA_ID, PJ_ID, UA_Code, UA_TextKeyID, UA_ThemeJSON, UA_ConfigJSON, UA_IsEnabled FROM Meta.UiApp WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY UA_Code;",
+      "output": [
+        {
+          "name": "UA_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UA_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "UA_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UA_ThemeJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "UA_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "UA_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "UA_Code"
+      ]
+    },
+    {
+      "name": "ui_pages",
+      "purpose": "UI pages for project UI apps.",
+      "sql": "SELECT UP_ID, UA_ID, UP_Code, UP_Route, UP_LayoutJSON, UP_TextKeyID, UP_IsEnabled FROM Meta.UiPage WHERE _DeleteDate IS NULL AND UA_ID IN (SELECT UA_ID FROM Meta.UiApp WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY UA_ID, UP_Code;",
+      "output": [
+        {
+          "name": "UP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UA_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UP_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "UP_Route",
+          "type": "nvarchar(300)"
+        },
+        {
+          "name": "UP_LayoutJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "UP_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UP_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "UA_ID",
+        "UP_Code"
+      ]
+    },
+    {
+      "name": "ui_components",
+      "purpose": "Reusable UI components for project.",
+      "sql": "SELECT UC_ID, PJ_ID, UC_Code, UC_Type, UC_SpecJSON, UC_TextKeyID, UC_IsEnabled FROM Meta.UiComponent WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY UC_Code;",
+      "output": [
+        {
+          "name": "UC_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UC_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "UC_Type",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "UC_SpecJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "UC_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UC_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "UC_Code"
+      ]
+    },
+    {
+      "name": "ui_page_components",
+      "purpose": "Page component placements.",
+      "sql": "SELECT UPC_ID, UP_ID, UC_ID, UPC_Order, UPC_Region, UPC_VisibilityDSL, UPC_TextKeyID FROM Meta.UiPageComponent WHERE _DeleteDate IS NULL AND UP_ID IN (SELECT UP_ID FROM Meta.UiPage WHERE _DeleteDate IS NULL AND UA_ID IN (SELECT UA_ID FROM Meta.UiApp WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL)) ORDER BY UP_ID, UPC_Order;",
+      "output": [
+        {
+          "name": "UPC_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UC_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UPC_Order",
+          "type": "int"
+        },
+        {
+          "name": "UPC_Region",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "UPC_VisibilityDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "UPC_TextKeyID",
+          "type": "uniqueidentifier"
+        }
+      ],
+      "orderBy": [
+        "UP_ID",
+        "UPC_Order"
+      ]
+    },
+    {
+      "name": "ui_validation_rules",
+      "purpose": "UI validation rules for project.",
+      "sql": "SELECT UV_ID, PJ_ID, UV_Code, UV_ObjectType, UV_ObjectID, UV_RuleDSL, UV_MessageTextKeyID, UV_Severity, UV_IsEnabled FROM Meta.UiValidationRule WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY UV_Code;",
+      "output": [
+        {
+          "name": "UV_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UV_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "UV_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "UV_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UV_RuleDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "UV_MessageTextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UV_Severity",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "UV_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "UV_Code"
+      ]
+    },
+    {
+      "name": "ui_search_facets",
+      "purpose": "UI search facets.",
+      "sql": "SELECT UFAC_ID, PJ_ID, UFAC_Code, UFAC_ObjectType, UFAC_ObjectID, UFAC_FieldPath, UFAC_FacetType, UFAC_SortOrder, UFAC_TextKeyID, UFAC_ConfigJSON FROM Meta.UiSearchFacet WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY UFAC_SortOrder, UFAC_Code;",
+      "output": [
+        {
+          "name": "UFAC_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UFAC_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "UFAC_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "UFAC_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UFAC_FieldPath",
+          "type": "nvarchar(300)"
+        },
+        {
+          "name": "UFAC_FacetType",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "UFAC_SortOrder",
+          "type": "int"
+        },
+        {
+          "name": "UFAC_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "UFAC_ConfigJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "UFAC_SortOrder",
+        "UFAC_Code"
+      ]
+    },
+    {
+      "name": "retention_policies",
+      "purpose": "Retention policies.",
+      "sql": "SELECT RTN_ID, PJ_ID, RTN_Code, RTN_RetentionDays, RTN_Disposition, RTN_TextKeyID, RTN_ConfigJSON FROM Meta.RetentionPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY RTN_Code;",
+      "output": [
+        {
+          "name": "RTN_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RTN_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "RTN_RetentionDays",
+          "type": "int"
+        },
+        {
+          "name": "RTN_Disposition",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "RTN_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RTN_ConfigJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "RTN_Code"
+      ]
+    },
+    {
+      "name": "document_policies",
+      "purpose": "Document policies (chain-of-custody config).",
+      "sql": "SELECT DPL_ID, DT_ID, RTN_ID, DPL_IntegrityMode, DPL_RedactionPolicyID, DPL_WatermarkPolicyJSON, DPL_ConfigJSON FROM Meta.DocumentPolicy WHERE _DeleteDate IS NULL AND DT_ID IN (SELECT DT_ID FROM Meta.DocumentType WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY DT_ID;",
+      "output": [
+        {
+          "name": "DPL_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DT_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RTN_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DPL_IntegrityMode",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "DPL_RedactionPolicyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DPL_WatermarkPolicyJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "DPL_ConfigJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "DT_ID"
+      ]
+    },
+    {
+      "name": "data_assets",
+      "purpose": "Lineage data assets.",
+      "sql": "SELECT DA_ID, PJ_ID, DA_AssetType, DA_LogicalName, DA_PhysicalRef, DA_TextKeyID, DA_Notes FROM Meta.DataAsset WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY DA_AssetType, DA_LogicalName;",
+      "output": [
+        {
+          "name": "DA_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DA_AssetType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "DA_LogicalName",
+          "type": "nvarchar(400)"
+        },
+        {
+          "name": "DA_PhysicalRef",
+          "type": "nvarchar(600)"
+        },
+        {
+          "name": "DA_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DA_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "DA_AssetType",
+        "DA_LogicalName"
+      ]
+    },
+    {
+      "name": "lineage_edges",
+      "purpose": "Lineage edges.",
+      "sql": "SELECT LE_ID, PJ_ID, LE_FromDA_ID, LE_ToDA_ID, LE_TransformDSL, LE_Notes FROM Meta.LineageEdge WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY LE_FromDA_ID, LE_ToDA_ID;",
+      "output": [
+        {
+          "name": "LE_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "LE_FromDA_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "LE_ToDA_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "LE_TransformDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "LE_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "LE_FromDA_ID",
+        "LE_ToDA_ID"
+      ]
+    },
+    {
+      "name": "job_runs",
+      "purpose": "Job runs.",
+      "sql": "SELECT JR_ID, PJ_ID, JB_ID, JR_RunKey, JR_Status, JR_StartUTC, JR_EndUTC, JR_MetricsJSON, JR_ErrorJSON FROM Meta.JobRun WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY JR_StartUTC DESC;",
+      "output": [
+        {
+          "name": "JR_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "JB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "JR_RunKey",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "JR_Status",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "JR_StartUTC",
+          "type": "datetime2(3)"
+        },
+        {
+          "name": "JR_EndUTC",
+          "type": "datetime2(3)"
+        },
+        {
+          "name": "JR_MetricsJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "JR_ErrorJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "JR_StartUTC DESC"
+      ]
+    },
+    {
+      "name": "job_run_assets",
+      "purpose": "Job run assets (inputs/outputs).",
+      "sql": "SELECT JRA_ID, JR_ID, DA_ID, JRA_Role, JRA_StatsJSON FROM Meta.JobRunAsset WHERE _DeleteDate IS NULL AND JR_ID IN (SELECT JR_ID FROM Meta.JobRun WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY JR_ID;",
+      "output": [
+        {
+          "name": "JRA_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "JR_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DA_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "JRA_Role",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "JRA_StatsJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "JR_ID"
+      ]
+    },
+    {
+      "name": "sync_policies",
+      "purpose": "Offline sync policies.",
+      "sql": "SELECT SY_ID, PJ_ID, SY_Code, SY_ObjectType, SY_ObjectID, SY_Mode, SY_MergeDSL, SY_IdempotencyKeySpec, SY_IsEnabled, SY_Notes FROM Meta.SyncPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY SY_Code;",
+      "output": [
+        {
+          "name": "SY_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SY_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "SY_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SY_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SY_Mode",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SY_MergeDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "SY_IdempotencyKeySpec",
+          "type": "nvarchar(300)"
+        },
+        {
+          "name": "SY_IsEnabled",
+          "type": "bit"
+        },
+        {
+          "name": "SY_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "SY_Code"
+      ]
+    },
+    {
+      "name": "fact_tables",
+      "purpose": "BI fact tables.",
+      "sql": "SELECT FTBL_ID, PJ_ID, FTBL_Code, TB_ID, FTBL_GrainJSON, FTBL_IsSnapshot, FTBL_TextKeyID, FTBL_Notes FROM Meta.FactTable WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY FTBL_Code;",
+      "output": [
+        {
+          "name": "FTBL_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FTBL_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "TB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FTBL_GrainJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "FTBL_IsSnapshot",
+          "type": "bit"
+        },
+        {
+          "name": "FTBL_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "FTBL_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "FTBL_Code"
+      ]
+    },
+    {
+      "name": "dimension_tables",
+      "purpose": "BI dimension tables.",
+      "sql": "SELECT DMT_ID, PJ_ID, DMT_Code, TB_ID, DMT_ScdType, DMT_NaturalKeySpec, DMT_TextKeyID, DMT_Notes FROM Meta.DimensionTable WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY DMT_Code;",
+      "output": [
+        {
+          "name": "DMT_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DMT_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "TB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DMT_ScdType",
+          "type": "nvarchar(20)"
+        },
+        {
+          "name": "DMT_NaturalKeySpec",
+          "type": "nvarchar(300)"
+        },
+        {
+          "name": "DMT_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "DMT_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "DMT_Code"
+      ]
+    },
+    {
+      "name": "partition_specs",
+      "purpose": "Partition specs for project objects.",
+      "sql": "SELECT PS_ID, PJ_ID, PS_ObjectType, PS_ObjectID, PS_Strategy, PS_SpecJSON, PS_Notes FROM Meta.PartitionSpec WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY PS_ObjectType;",
+      "output": [
+        {
+          "name": "PS_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PS_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "PS_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PS_Strategy",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "PS_SpecJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "PS_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "PS_ObjectType"
+      ]
     }
   ],
   "notes": [

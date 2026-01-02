@@ -1995,3 +1995,367 @@ GO
 /* =========================
    Seed runtime templates (stored as Meta.EventTemplate specs)
    ========================= */
+
+
+
+/* =====================================================================
+   UI/UX Generation (advanced)
+   ===================================================================== */
+IF OBJECT_ID('Meta.UiApp','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.UiApp (
+    UA_ID           uniqueidentifier NOT NULL CONSTRAINT pk_UA PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    UA_Code         nvarchar(120) NOT NULL, -- e.g., CasePortal, AdminConsole
+    UA_TextKeyID    uniqueidentifier NULL,
+    UA_ThemeJSON    nvarchar(max) NULL,
+    UA_ConfigJSON   nvarchar(max) NULL,
+    UA_IsEnabled    bit NOT NULL CONSTRAINT df_UA_IsEnabled DEFAULT (1),
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_UA_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_UA_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID),
+    CONSTRAINT fk_UA_TK FOREIGN KEY (UA_TextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_UA_Code ON Meta.UiApp(PJ_ID, UA_Code) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.UiPage','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.UiPage (
+    UP_ID           uniqueidentifier NOT NULL CONSTRAINT pk_UP PRIMARY KEY,
+    UA_ID           uniqueidentifier NOT NULL,
+    UP_Code         nvarchar(200) NOT NULL, -- e.g., Case.List, Case.Detail
+    UP_Route        nvarchar(300) NULL,     -- /cases/:id
+    UP_LayoutJSON   nvarchar(max) NULL,     -- grid layout, tabs, sections
+    UP_TextKeyID    uniqueidentifier NULL,
+    UP_IsEnabled    bit NOT NULL CONSTRAINT df_UP_IsEnabled DEFAULT (1),
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_UP_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_UP_UA FOREIGN KEY (UA_ID) REFERENCES Meta.UiApp(UA_ID),
+    CONSTRAINT fk_UP_TK FOREIGN KEY (UP_TextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_UP_Code ON Meta.UiPage(UA_ID, UP_Code) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.UiComponent','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.UiComponent (
+    UC_ID           uniqueidentifier NOT NULL CONSTRAINT pk_UC PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    UC_Code         nvarchar(200) NOT NULL, -- reusable component library token
+    UC_Type         nvarchar(80) NOT NULL,  -- Table, Form, Card, Chart, Timeline, Map
+    UC_SpecJSON     nvarchar(max) NOT NULL, -- component props, bindings
+    UC_TextKeyID    uniqueidentifier NULL,
+    UC_IsEnabled    bit NOT NULL CONSTRAINT df_UC_IsEnabled DEFAULT (1),
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_UC_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_UC_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID),
+    CONSTRAINT fk_UC_TK FOREIGN KEY (UC_TextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_UC_Code ON Meta.UiComponent(PJ_ID, UC_Code) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.UiPageComponent','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.UiPageComponent (
+    UPC_ID          uniqueidentifier NOT NULL CONSTRAINT pk_UPC PRIMARY KEY,
+    UP_ID           uniqueidentifier NOT NULL,
+    UC_ID           uniqueidentifier NOT NULL,
+    UPC_Order       int NOT NULL,
+    UPC_Region      nvarchar(80) NULL,      -- header/body/sidebar/footer
+    UPC_VisibilityDSL nvarchar(max) NULL,   -- conditional show/hide
+    UPC_TextKeyID   uniqueidentifier NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_UPC_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_UPC_UP FOREIGN KEY (UP_ID) REFERENCES Meta.UiPage(UP_ID),
+    CONSTRAINT fk_UPC_UC FOREIGN KEY (UC_ID) REFERENCES Meta.UiComponent(UC_ID),
+    CONSTRAINT fk_UPC_TK FOREIGN KEY (UPC_TextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_UPC_Order ON Meta.UiPageComponent(UP_ID, UPC_Order) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.UiValidationRule','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.UiValidationRule (
+    UV_ID           uniqueidentifier NOT NULL CONSTRAINT pk_UV PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    UV_Code         nvarchar(200) NOT NULL,
+    UV_ObjectType   nvarchar(30) NOT NULL, -- UiField/Field/UiComponent
+    UV_ObjectID     uniqueidentifier NULL,
+    UV_RuleDSL      nvarchar(max) NOT NULL, -- portable DSL
+    UV_MessageTextKeyID uniqueidentifier NULL,
+    UV_Severity     nvarchar(30) NOT NULL, -- Info/Warning/Error
+    UV_IsEnabled    bit NOT NULL CONSTRAINT df_UV_IsEnabled DEFAULT (1),
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_UV_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_UV_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID),
+    CONSTRAINT fk_UV_TK FOREIGN KEY (UV_MessageTextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_UV_Code ON Meta.UiValidationRule(PJ_ID, UV_Code) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.UiSearchFacet','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.UiSearchFacet (
+    UFAC_ID         uniqueidentifier NOT NULL CONSTRAINT pk_UFAC PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    UFAC_Code       nvarchar(200) NOT NULL,
+    UFAC_ObjectType nvarchar(30) NOT NULL, -- Table/UiEntity
+    UFAC_ObjectID   uniqueidentifier NULL, -- TB_ID/UE_ID
+    UFAC_FieldPath  nvarchar(300) NOT NULL, -- object.field or json path
+    UFAC_FacetType  nvarchar(50) NOT NULL,  -- Term/Range/Date/Geo
+    UFAC_SortOrder  int NOT NULL CONSTRAINT df_UFAC_Sort DEFAULT (0),
+    UFAC_TextKeyID  uniqueidentifier NULL,
+    UFAC_ConfigJSON nvarchar(max) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_UFAC_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_UFAC_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID),
+    CONSTRAINT fk_UFAC_TK FOREIGN KEY (UFAC_TextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_UFAC_Code ON Meta.UiSearchFacet(PJ_ID, UFAC_Code) WHERE _DeleteDate IS NULL;
+END
+GO
+
+/* =====================================================================
+   Document/Evidence Chain of Custody (integrity templates)
+   ===================================================================== */
+IF OBJECT_ID('Meta.RetentionPolicy','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.RetentionPolicy (
+    RTN_ID          uniqueidentifier NOT NULL CONSTRAINT pk_RTN PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    RTN_Code        nvarchar(120) NOT NULL,
+    RTN_RetentionDays int NULL,
+    RTN_Disposition nvarchar(50) NULL, -- Archive/Purge/LegalHold
+    RTN_TextKeyID   uniqueidentifier NULL,
+    RTN_ConfigJSON  nvarchar(max) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_RTN_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_RTN_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID),
+    CONSTRAINT fk_RTN_TK FOREIGN KEY (RTN_TextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_RTN_Code ON Meta.RetentionPolicy(PJ_ID, RTN_Code) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.DocumentPolicy','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.DocumentPolicy (
+    DPL_ID          uniqueidentifier NOT NULL CONSTRAINT pk_DPL PRIMARY KEY,
+    DT_ID           uniqueidentifier NOT NULL,
+    RTN_ID          uniqueidentifier NULL,
+    DPL_IntegrityMode nvarchar(50) NOT NULL, -- Hash/Signed/HashChain/WORM
+    DPL_RedactionPolicyID uniqueidentifier NULL,
+    DPL_WatermarkPolicyJSON nvarchar(max) NULL,
+    DPL_ConfigJSON  nvarchar(max) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_DPL_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_DPL_DT FOREIGN KEY (DT_ID) REFERENCES Meta.DocumentType(DT_ID),
+    CONSTRAINT fk_DPL_RTN FOREIGN KEY (RTN_ID) REFERENCES Meta.RetentionPolicy(RTN_ID),
+    CONSTRAINT fk_DPL_RP FOREIGN KEY (DPL_RedactionPolicyID) REFERENCES Meta.RedactionPolicy(RP_ID)
+  );
+  CREATE UNIQUE INDEX ix_DPL_DT ON Meta.DocumentPolicy(DT_ID) WHERE _DeleteDate IS NULL;
+END
+GO
+
+/* =====================================================================
+   Lineage / Observability / Job Runs (deterministic audit for pipelines)
+   ===================================================================== */
+IF OBJECT_ID('Meta.DataAsset','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.DataAsset (
+    DA_ID           uniqueidentifier NOT NULL CONSTRAINT pk_DA PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    DA_AssetType    nvarchar(30) NOT NULL, -- Table/View/File/Topic/Semantic
+    DA_LogicalName  nvarchar(400) NOT NULL, -- canonical name
+    DA_PhysicalRef  nvarchar(600) NULL,     -- platform ref
+    DA_TextKeyID    uniqueidentifier NULL,
+    DA_Notes        nvarchar(1000) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_DA_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_DA_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID),
+    CONSTRAINT fk_DA_TK FOREIGN KEY (DA_TextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_DA_Name ON Meta.DataAsset(PJ_ID, DA_AssetType, DA_LogicalName) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.LineageEdge','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.LineageEdge (
+    LE_ID           uniqueidentifier NOT NULL CONSTRAINT pk_LE PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    LE_FromDA_ID    uniqueidentifier NOT NULL,
+    LE_ToDA_ID      uniqueidentifier NOT NULL,
+    LE_TransformDSL nvarchar(max) NULL, -- field-level mapping / sql / dsl
+    LE_Notes        nvarchar(1000) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_LE_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_LE_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID),
+    CONSTRAINT fk_LE_From FOREIGN KEY (LE_FromDA_ID) REFERENCES Meta.DataAsset(DA_ID),
+    CONSTRAINT fk_LE_To FOREIGN KEY (LE_ToDA_ID) REFERENCES Meta.DataAsset(DA_ID)
+  );
+  CREATE INDEX ix_LE_FromTo ON Meta.LineageEdge(PJ_ID, LE_FromDA_ID, LE_ToDA_ID) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.JobRun','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.JobRun (
+    JR_ID           uniqueidentifier NOT NULL CONSTRAINT pk_JR PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    JB_ID           uniqueidentifier NULL, -- Meta.Job (if exists) or external
+    JR_RunKey       nvarchar(200) NOT NULL, -- external run id
+    JR_Status       nvarchar(30) NOT NULL,  -- Running/Succeeded/Failed/Cancelled
+    JR_StartUTC     datetime2(3) NOT NULL,
+    JR_EndUTC       datetime2(3) NULL,
+    JR_MetricsJSON  nvarchar(max) NULL, -- rows read/written, bytes, costs
+    JR_ErrorJSON    nvarchar(max) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_JR_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_JR_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID)
+  );
+  CREATE INDEX ix_JR_Status ON Meta.JobRun(PJ_ID, JR_Status, JR_StartUTC) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.JobRunAsset','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.JobRunAsset (
+    JRA_ID          uniqueidentifier NOT NULL CONSTRAINT pk_JRA PRIMARY KEY,
+    JR_ID           uniqueidentifier NOT NULL,
+    DA_ID           uniqueidentifier NOT NULL,
+    JRA_Role        nvarchar(30) NOT NULL, -- Input/Output
+    JRA_StatsJSON   nvarchar(max) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_JRA_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_JRA_JR FOREIGN KEY (JR_ID) REFERENCES Meta.JobRun(JR_ID),
+    CONSTRAINT fk_JRA_DA FOREIGN KEY (DA_ID) REFERENCES Meta.DataAsset(DA_ID)
+  );
+  CREATE INDEX ix_JRA_JR ON Meta.JobRunAsset(JR_ID, JRA_Role) WHERE _DeleteDate IS NULL;
+END
+GO
+
+/* =====================================================================
+   Offline Sync / Conflict Resolution (policy-driven)
+   ===================================================================== */
+IF OBJECT_ID('Meta.SyncPolicy','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.SyncPolicy (
+    SY_ID           uniqueidentifier NOT NULL CONSTRAINT pk_SY PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    SY_Code         nvarchar(120) NOT NULL,
+    SY_ObjectType   nvarchar(30) NOT NULL, -- Table/UiEntity
+    SY_ObjectID     uniqueidentifier NULL,
+    SY_Mode         nvarchar(30) NOT NULL, -- OfflineFirst/OnlineOnly/Hybrid
+    SY_MergeDSL     nvarchar(max) NULL,    -- conflict resolution policy
+    SY_IdempotencyKeySpec nvarchar(300) NULL,
+    SY_Notes        nvarchar(1000) NULL,
+    SY_IsEnabled    bit NOT NULL CONSTRAINT df_SY_IsEnabled DEFAULT (1),
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_SY_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_SY_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID)
+  );
+  CREATE UNIQUE INDEX ix_SY_Code ON Meta.SyncPolicy(PJ_ID, SY_Code) WHERE _DeleteDate IS NULL;
+END
+GO
+
+/* =====================================================================
+   BI deep model: Facts/Dimensions/Grain/SCD/Partitions/Aggregations
+   ===================================================================== */
+IF OBJECT_ID('Meta.FactTable','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.FactTable (
+    FTBL_ID         uniqueidentifier NOT NULL CONSTRAINT pk_FTBL PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    FTBL_Code       nvarchar(120) NOT NULL,
+    TB_ID           uniqueidentifier NOT NULL,
+    FTBL_GrainJSON  nvarchar(max) NOT NULL, -- grain definition
+    FTBL_IsSnapshot bit NOT NULL CONSTRAINT df_FTBL_IsSnapshot DEFAULT (0),
+    FTBL_TextKeyID  uniqueidentifier NULL,
+    FTBL_Notes      nvarchar(1000) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_FTBL_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_FTBL_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID),
+    CONSTRAINT fk_FTBL_TB FOREIGN KEY (TB_ID) REFERENCES Meta.Table(TB_ID),
+    CONSTRAINT fk_FTBL_TK FOREIGN KEY (FTBL_TextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_FTBL_Code ON Meta.FactTable(PJ_ID, FTBL_Code) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.DimensionTable','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.DimensionTable (
+    DMT_ID          uniqueidentifier NOT NULL CONSTRAINT pk_DMT PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    DMT_Code        nvarchar(120) NOT NULL,
+    TB_ID           uniqueidentifier NOT NULL,
+    DMT_ScdType     nvarchar(20) NULL, -- Type1/Type2/Type3
+    DMT_NaturalKeySpec nvarchar(300) NULL,
+    DMT_TextKeyID   uniqueidentifier NULL,
+    DMT_Notes       nvarchar(1000) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_DMT_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_DMT_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID),
+    CONSTRAINT fk_DMT_TB FOREIGN KEY (TB_ID) REFERENCES Meta.Table(TB_ID),
+    CONSTRAINT fk_DMT_TK FOREIGN KEY (DMT_TextKeyID) REFERENCES Meta.TextKey(TK_ID)
+  );
+  CREATE UNIQUE INDEX ix_DMT_Code ON Meta.DimensionTable(PJ_ID, DMT_Code) WHERE _DeleteDate IS NULL;
+END
+GO
+
+IF OBJECT_ID('Meta.PartitionSpec','U') IS NULL
+BEGIN
+  CREATE TABLE Meta.PartitionSpec (
+    PS_ID           uniqueidentifier NOT NULL CONSTRAINT pk_PS PRIMARY KEY,
+    PJ_ID           uniqueidentifier NOT NULL,
+    PS_ObjectType   nvarchar(30) NOT NULL, -- Table/Fact/Dimension
+    PS_ObjectID     uniqueidentifier NULL,
+    PS_Strategy     nvarchar(30) NOT NULL, -- Date/Hash/Range/List
+    PS_SpecJSON     nvarchar(max) NOT NULL,
+    PS_Notes        nvarchar(1000) NULL,
+    _CreateDate     datetime2(3) NOT NULL CONSTRAINT df_PS_CreateDate DEFAULT (sysutcdatetime()),
+    _CreatedBy      nvarchar(128) NULL,
+    _DeleteDate     datetime2(3) NULL,
+    _DeletedBy      nvarchar(128) NULL,
+    CONSTRAINT fk_PS_PJ FOREIGN KEY (PJ_ID) REFERENCES Meta.Project(PJ_ID)
+  );
+  CREATE INDEX ix_PS_Object ON Meta.PartitionSpec(PJ_ID, PS_ObjectType, PS_ObjectID) WHERE _DeleteDate IS NULL;
+END
+GO

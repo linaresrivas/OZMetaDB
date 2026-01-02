@@ -45,6 +45,7 @@
       "type": "object",
       "required": [
         "ai",
+        "biModel",
         "devops",
         "dimensions",
         "documents",
@@ -54,6 +55,7 @@
         "ingestion",
         "jobs",
         "lifecycle",
+        "lineage",
         "mappings",
         "metrics",
         "platform",
@@ -63,9 +65,11 @@
         "security",
         "semantic",
         "sources",
+        "sync",
         "tables",
         "templates",
         "texts",
+        "ui",
         "workflows"
       ],
       "properties": {
@@ -181,6 +185,22 @@
           "additionalProperties": true
         },
         "lifecycle": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "ui": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "lineage": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "sync": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "biModel": {
           "type": "object",
           "additionalProperties": true
         }
