@@ -1,0 +1,89 @@
+{
+  "wizardCode": "DeepSearch",
+  "title": "Deep Search / Identity Resolution Starter Pack",
+  "steps": [
+    {
+      "code": "Basics",
+      "title": "Basics",
+      "questions": [
+        {
+          "key": "dataSchema",
+          "type": "string",
+          "default": "dp",
+          "prompt": "Schema for profile tables?"
+        },
+        {
+          "key": "matchSensitivity",
+          "type": "enum",
+          "options": [
+            "Low",
+            "Medium",
+            "High"
+          ],
+          "default": "High",
+          "prompt": "Match sensitivity?"
+        }
+      ],
+      "actionGenerators": [
+        {
+          "type": "CreateCoreTables",
+          "caseTable": "Profile",
+          "personTable": "IdentityMarker",
+          "caseFields": [
+            {
+              "code": "PR_ID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "PR_RiskScore",
+              "type": "decimal(9,2)",
+              "nullable": true
+            },
+            {
+              "code": "_TenantID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "_CreateDate",
+              "type": "datetime2",
+              "nullable": false
+            }
+          ],
+          "personFields": [
+            {
+              "code": "IM_ID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "IM_Type",
+              "type": "nvarchar(60)",
+              "nullable": false
+            },
+            {
+              "code": "IM_Value",
+              "type": "nvarchar(300)",
+              "nullable": false
+            },
+            {
+              "code": "_TenantID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "_CreateDate",
+              "type": "datetime2",
+              "nullable": false
+            }
+          ]
+        },
+        {
+          "type": "CreateWorkflowTemplate",
+          "workflowCode": "ProfileReviewWorkflow"
+        }
+      ]
+    }
+  ]
+}

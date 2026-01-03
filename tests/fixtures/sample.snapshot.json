@@ -12,66 +12,7 @@
     "tables": [],
     "fields": [],
     "relations": [],
-    "workflows": {
-      "workflows": [
-        {
-          "id": "00000000-0000-0000-0000-000000000701",
-          "code": "CaseLifecycle",
-          "configJson": "{}"
-        }
-      ],
-      "states": [
-        {
-          "id": "00000000-0000-0000-0000-000000000711",
-          "workflowId": "00000000-0000-0000-0000-000000000701",
-          "code": "NEW",
-          "isInitial": true,
-          "isTerminal": false,
-          "slaMinutes": 1440,
-          "configJson": "{}"
-        },
-        {
-          "id": "00000000-0000-0000-0000-000000000712",
-          "workflowId": "00000000-0000-0000-0000-000000000701",
-          "code": "REVIEW",
-          "isInitial": false,
-          "isTerminal": false,
-          "slaMinutes": 2880,
-          "configJson": "{}"
-        },
-        {
-          "id": "00000000-0000-0000-0000-000000000713",
-          "workflowId": "00000000-0000-0000-0000-000000000701",
-          "code": "CLOSED",
-          "isInitial": false,
-          "isTerminal": true,
-          "slaMinutes": null,
-          "configJson": "{}"
-        }
-      ],
-      "transitions": [
-        {
-          "id": "00000000-0000-0000-0000-000000000721",
-          "workflowId": "00000000-0000-0000-0000-000000000701",
-          "code": "Submit",
-          "fromStateId": "00000000-0000-0000-0000-000000000711",
-          "toStateId": "00000000-0000-0000-0000-000000000712",
-          "guardDsl": "allow",
-          "actionDsl": "",
-          "configJson": "{}"
-        },
-        {
-          "id": "00000000-0000-0000-0000-000000000722",
-          "workflowId": "00000000-0000-0000-0000-000000000701",
-          "code": "Close",
-          "fromStateId": "00000000-0000-0000-0000-000000000712",
-          "toStateId": "00000000-0000-0000-0000-000000000713",
-          "guardDsl": "allow",
-          "actionDsl": "",
-          "configJson": "{}"
-        }
-      ]
-    },
+    "workflows": [],
     "security": {
       "policies": [],
       "tableSecurity": [],

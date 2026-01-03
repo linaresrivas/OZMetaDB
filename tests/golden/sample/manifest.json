@@ -1,0 +1,66 @@
+{
+  "schema": "ozmeta.manifest.v1",
+  "generatedAtUTC": "2026-01-03T05:55:52Z",
+  "snapshot": {
+    "path": "tests/fixtures/sample.snapshot.json",
+    "sha256": "d6fbb63ab3e32c064a0e305d8674f758d52a58191e4bab55fc31b3e9376d88c5"
+  },
+  "outputsSha256": "95c50cb0c54f75c572f4578cf16caa26a771e7ec6655194f9b17af7d3285cb17",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 48,
+      "sha256": "b6763b49963368a05e147c9314dd8f0e39678579b03c9f8776d9d0f22240766a"
+    },
+    {
+      "path": "sql/10-data-plane.sql",
+      "bytes": 639,
+      "sha256": "336b4e192a4af91e5620af826043333b83d2a703552df0ff646f6d33e1e4ebde"
+    },
+    {
+      "path": "sql/20-workflow-runtime.sql",
+      "bytes": 1216,
+      "sha256": "86bba2361510204307c04c03dc809285f601c4dafc1d2a08a6cebf5449231b5c"
+    },
+    {
+      "path": "sql/30-audit.sql",
+      "bytes": 536,
+      "sha256": "e6a6d62b46f503898e58811d5fd25de1af6c50e51c562d6155d6f74d14a0bf6d"
+    },
+    {
+      "path": "sql/40-enums.sql",
+      "bytes": 1052,
+      "sha256": "297203f31d0067b5cc9344fc8e974962b5f2724c4d304d7d1a24d522923c8a2d"
+    },
+    {
+      "path": "sql/50-documents.sql",
+      "bytes": 1409,
+      "sha256": "3eab33d7a78ce3f5280d5b3ae7cf21aa81589e0a13b0294d279136373f4c60be"
+    },
+    {
+      "path": "sql/60-constraints.sql",
+      "bytes": 109,
+      "sha256": "d6bc5e3169a0cc13ffee93308537d3a69a59b9b45857e5a07a879355b60e02fb"
+    },
+    {
+      "path": "sql/70-indexes.sql",
+      "bytes": 24,
+      "sha256": "d6ea6e0a63bb9baec15c450be7073ec81af3deedae7d232587927a2a0791ea7c"
+    },
+    {
+      "path": "sql/80-workflow-defs.sql",
+      "bytes": 1911,
+      "sha256": "5950d68b3bbcb692888a472029502ecca898d24a78f962aec131815fdc37d306"
+    },
+    {
+      "path": "sql/85-rls.sql",
+      "bytes": 694,
+      "sha256": "2bf9063e9c0204e0c8928ffbc7136b6611dd8f38becfaf5509c5b5f0b20f6b24"
+    },
+    {
+      "path": "sql/90-constraint-profile.sql",
+      "bytes": 104,
+      "sha256": "d508fbeb7cbb9f678ae932fa52cea17cc86c5fd0f1c9af1f3927550370b9c0eb"
+    }
+  ]
+}

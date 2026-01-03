@@ -97,10 +97,74 @@
           }
         },
         "workflows": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/workflowPack"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/workflowPack"
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "workflows": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "states": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "transitions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "transitionRoles": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "approvalFlows": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "slas": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "required": [
+                "workflows",
+                "states",
+                "transitions"
+              ]
+            }
+          ]
         },
         "security": {
           "type": "object",
@@ -159,11 +223,37 @@
           ]
         },
         "enums": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enums": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              },
+              "required": [
+                "enums",
+                "values"
+              ]
+            }
+          ]
         },
         "sources": {
           "type": "object",
@@ -244,9 +334,71 @@
         "reliability": {
           "type": "object",
           "additionalProperties": true
+        },
+        "model": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "tables": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "identityResolution": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "matchRules": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "uiThemes": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "personalization": {
+          "type": "object",
+          "properties": {
+            "client": {
+              "type": "object"
+            },
+            "system": {
+              "type": "object"
+            },
+            "user": {
+              "type": "object"
+            }
+          }
+        },
+        "controlPlane": {
+          "type": "object",
+          "properties": {
+            "wizards": {
+              "type": "array"
+            },
+            "changeRequestTypes": {
+              "type": "array"
+            },
+            "migrationProfiles": {
+              "type": "array"
+            }
+          }
         }
       },
       "additionalProperties": false
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true
     }
   },
   "additionalProperties": false,

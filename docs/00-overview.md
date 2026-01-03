@@ -70,3 +70,15 @@ See also: `docs/40-exporter-contract-full-fidelity.md`.
 See also: `docs/41-testing-strategy.md`.
 
 See also: `docs/42-governance-implementation.md`.
+
+See also: `docs/50-control-plane-api.md`.
+
+See also: `docs/51-change-request-engine.md`.
+
+See also: `docs/52-wizard-engine.md`.
+
+See also: `docs/53-multi-engine-compilers.md`.
+
+See also: `docs/54-migration-runner.md`.
+
+See also: `docs/55-personalization.md`.

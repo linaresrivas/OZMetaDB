@@ -1,0 +1,47 @@
+{
+  "version": "1.0",
+  "commands": {
+    "validate": {
+      "args": [
+        "--snapshot",
+        "--schema"
+      ],
+      "exitCodes": {
+        "0": "OK",
+        "2": "validation failed",
+        "3": "file error",
+        "10": "unexpected"
+      }
+    },
+    "generate": {
+      "args": [
+        "--snapshot",
+        "--out"
+      ],
+      "outputs": [
+        "README.md",
+        "sql/*.sql",
+        "manifest.json"
+      ],
+      "exitCodes": {
+        "0": "OK",
+        "2": "validation failed",
+        "10": "unexpected"
+      }
+    },
+    "export": {
+      "args": [
+        "--provider",
+        "--connection",
+        "--project-id",
+        "--out"
+      ],
+      "exitCodes": {
+        "0": "OK",
+        "2": "contract violated",
+        "4": "db connection failed",
+        "10": "unexpected"
+      }
+    }
+  }
+}

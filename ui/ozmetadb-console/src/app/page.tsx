@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/shell/AppShell";
+import { SnapshotCommandPalette } from "@/components/command/SnapshotCommandPalette";
 
 export default function HomePage() {
   return (
@@ -8,7 +9,8 @@ export default function HomePage() {
         <p className="text-muted-foreground">
           Starter OZMetaDB Console. Replace placeholders by binding to MetaDB snapshot exports.
         </p>
-      </div>
+            <SnapshotCommandPalette />
+    </div>
     </AppShell>
   );
 }

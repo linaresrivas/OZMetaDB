@@ -1,0 +1,83 @@
+{
+  "wizardCode": "CaseMgmt",
+  "title": "Case Management Starter Pack",
+  "steps": [
+    {
+      "code": "Basics",
+      "title": "Basics",
+      "questions": [
+        {
+          "key": "dataSchema",
+          "type": "string",
+          "default": "dp",
+          "prompt": "Data schema for core tables?"
+        },
+        {
+          "key": "tenantMode",
+          "type": "enum",
+          "options": [
+            "SingleTenant",
+            "MultiTenant"
+          ],
+          "default": "MultiTenant",
+          "prompt": "Tenant mode?"
+        }
+      ],
+      "actionGenerators": [
+        {
+          "type": "CreateCoreTables",
+          "caseTable": "Case",
+          "personTable": "Person",
+          "caseFields": [
+            {
+              "code": "CA_ID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "CA_Status",
+              "type": "nvarchar(40)",
+              "nullable": false
+            },
+            {
+              "code": "_TenantID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "_CreateDate",
+              "type": "datetime2",
+              "nullable": false
+            }
+          ],
+          "personFields": [
+            {
+              "code": "PE_ID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "PE_FullName",
+              "type": "nvarchar(200)",
+              "nullable": false
+            },
+            {
+              "code": "_TenantID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "_CreateDate",
+              "type": "datetime2",
+              "nullable": false
+            }
+          ]
+        },
+        {
+          "type": "CreateWorkflowTemplate",
+          "workflowCode": "CaseWorkflow"
+        }
+      ]
+    }
+  ]
+}

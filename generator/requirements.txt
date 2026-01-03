@@ -1,0 +1,2 @@
+jsonschema
+pyodbc; platform_system!='Darwin'
