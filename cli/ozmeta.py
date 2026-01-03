@@ -15,7 +15,7 @@ def main() -> int:
     v=sub.add_parser("validate"); v.add_argument("--snapshot", required=True)
     g=sub.add_parser("generate"); g.add_argument("--snapshot", required=True); g.add_argument("--out", required=True)
     e=sub.add_parser("export"); e.add_argument("--out", required=True); e.add_argument("--client", default="SFO"); e.add_argument("--project", default="CaseMgmt"); e.add_argument("--provider", default="stub"); e.add_argument("--connection", default="")
-    c=sub.add_parser("compile"); c.add_argument("--snapshot", required=True); c.add_argument("--target", required=True, choices=["postgres","bigquery","redshift"]); c.add_argument("--out", required=True); c.add_argument("--options", default="{}")
+    c=sub.add_parser("compile"); c.add_argument("--snapshot", required=True); c.add_argument("--target", required=True, choices=["postgres","bigquery","redshift","snowflake","spark"]); c.add_argument("--out", required=True); c.add_argument("--options", default="{}")
 
     args=ap.parse_args()
     if args.cmd=="validate":

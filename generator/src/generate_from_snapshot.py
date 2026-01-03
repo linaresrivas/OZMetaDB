@@ -511,20 +511,40 @@ def emit_workflow_defs_sql(snapshot: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _compile_predicate_dsl_to_sql(dsl: str) -> str:
-    """Very small portable DSL stub (pass-3+ will replace).
+def _compile_predicate_dsl_to_sql(dsl: str, target: str = "tsql") -> str:
+    """Compile portable DSL to target SQL.
 
-    Supported examples:
-    - "tenant" => "_TenantID = CAST(SESSION_CONTEXT(N'TenantID') as uniqueidentifier)"
-    - "allow" => "1=1"
-    Unknown => "1=0" (deny by default in generated RLS)
+    Steps:
+      1.1 Import DSL compiler
+      1.2 Compile DSL to SQL
+      1.3 Fallback for empty/invalid DSL
+
+    Supported DSL:
+    - Shorthands: "tenant", "allow", "deny"
+    - Expressions: {"op": "eq", "args": [{"ref": "field"}, {"lit": "value"}]}
+    - Complex: {"op": "and", "args": [...]}
     """
-    d = (dsl or "").strip().lower()
-    if d in ("tenant", "tenant_only", "tenantid"):
-        return "_TenantID = CAST(SESSION_CONTEXT(N'TenantID') as uniqueidentifier)"
-    if d in ("allow", "true", "1=1"):
-        return "1=1"
-    return "1=0"
+    import sys
+    from pathlib import Path
+
+    # Add compiler to path if needed
+    repo_root = Path(__file__).resolve().parents[2]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    try:
+        from compiler.dsl import compile_dsl
+        if not dsl or (isinstance(dsl, str) and not dsl.strip()):
+            return "1=0"  # Deny by default for empty guards
+        return compile_dsl(dsl, target)
+    except Exception as e:
+        # Fallback for import or compile errors
+        d = (dsl or "").strip().lower() if isinstance(dsl, str) else ""
+        if d in ("tenant", "tenant_only", "tenantid"):
+            return "_TenantID = CAST(SESSION_CONTEXT(N'TenantID') as uniqueidentifier)"
+        if d in ("allow", "true", "1=1"):
+            return "1=1"
+        return "1=0"
 
 
 def emit_rls_sql(snapshot: Dict[str, Any]) -> str:
