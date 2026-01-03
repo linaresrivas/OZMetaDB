@@ -1,0 +1,88 @@
+{
+  "nodes": [
+    {
+      "id": "tbl:None",
+      "name": "Transaction",
+      "type": "canonical_table",
+      "path": "dp.Transaction",
+      "schema": "dp",
+      "table": "Transaction",
+      "metadata": {
+        "schema": "dp",
+        "code": "Transaction",
+        "fields": [
+          {
+            "code": "TR_ID",
+            "type": "uuidv7",
+            "nullable": false
+          },
+          {
+            "code": "TREM_ID",
+            "type": "uuidv7",
+            "nullable": false
+          },
+          {
+            "code": "TREM_ApprovedBy",
+            "type": "uuidv7",
+            "nullable": true
+          },
+          {
+            "code": "_TenantID",
+            "type": "uuidv7",
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "fld:None",
+      "name": "_TenantID",
+      "type": "canonical_field",
+      "path": "dp.Transaction._TenantID",
+      "schema": "dp",
+      "table": "Transaction",
+      "field": "_TenantID",
+      "metadata": {
+        "code": "_TenantID",
+        "type": "uuidv7",
+        "nullable": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e:tbl:None->fld:None",
+      "source": "tbl:None",
+      "target": "fld:None",
+      "type": "direct"
+    },
+    {
+      "id": "e:tbl:None->fld:None",
+      "source": "tbl:None",
+      "target": "fld:None",
+      "type": "direct"
+    },
+    {
+      "id": "e:tbl:None->fld:None",
+      "source": "tbl:None",
+      "target": "fld:None",
+      "type": "direct"
+    },
+    {
+      "id": "e:tbl:None->fld:None",
+      "source": "tbl:None",
+      "target": "fld:None",
+      "type": "direct"
+    }
+  ],
+  "stats": {
+    "nodeCount": 2,
+    "edgeCount": 4,
+    "rootNodes": 1,
+    "terminalNodes": 1,
+    "nodesByType": {
+      "canonical_table": 1,
+      "canonical_field": 1
+    }
+  }
+}

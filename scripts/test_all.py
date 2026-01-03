@@ -315,6 +315,26 @@ def main() -> int:
         "3.3 CLI export (stub)",
         [sys.executable, "cli/ozmeta.py", "export", "--out", "out/e2e-cli-export.json"]
     ))
+    results.append(test(
+        "3.4 CLI metrics",
+        [sys.executable, "cli/ozmeta.py", "metrics",
+         "--snapshot", "exports/samples/sample.snapshot.json",
+         "--target", "dax",
+         "--out", "out/e2e-cli-metrics.json"]
+    ))
+    results.append(test(
+        "3.5 CLI jobs",
+        [sys.executable, "cli/ozmeta.py", "jobs",
+         "--snapshot", "exports/samples/sample.snapshot.json",
+         "--scheduler", "prefect",
+         "--out", "out/e2e-cli-jobs.py"]
+    ))
+    results.append(test(
+        "3.6 CLI lineage",
+        [sys.executable, "cli/ozmeta.py", "lineage",
+         "--snapshot", "exports/samples/sample.snapshot.json",
+         "--action", "stats"]
+    ))
 
     # 4. DSL Compiler
     print("\n4. DSL Compiler")

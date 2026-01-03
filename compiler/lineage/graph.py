@@ -423,7 +423,12 @@ def build_lineage_graph(snapshot: Dict[str, Any]) -> LineageGraph:
 
     # 1.5 Parse metrics as nodes
     metrics = objs.get("metrics", {})
-    metric_list = metrics.get("metrics", [])
+    if isinstance(metrics, list):
+        metric_list = metrics
+    elif isinstance(metrics, dict):
+        metric_list = metrics.get("metrics", [])
+    else:
+        metric_list = []
 
     for m in metric_list:
         m_id = m.get("id") or m.get("MT_ID")

@@ -594,10 +594,167 @@ def emit_rls_sql(snapshot: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def emit_metrics_sql(snapshot: Dict[str, Any]) -> str:
+    """Emit metrics/KPI SQL including compiled expressions and thresholds."""
+    import sys
+    repo_root = Path(__file__).resolve().parents[2]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    lines = [
+        "/* Generated Metrics & KPIs */",
+        "CREATE SCHEMA kpi;",
+        "GO",
+        "",
+        "IF OBJECT_ID('kpi.Metric','U') IS NULL",
+        "BEGIN",
+        "  CREATE TABLE kpi.Metric (",
+        "    MT_ID uniqueidentifier NOT NULL CONSTRAINT pk_MT PRIMARY KEY,",
+        "    MT_Code nvarchar(120) NOT NULL,",
+        "    MT_Name nvarchar(300) NULL,",
+        "    MT_Formula nvarchar(max) NULL,",
+        "    MT_CompiledSQL nvarchar(max) NULL,",
+        "    MT_CompiledDAX nvarchar(max) NULL,",
+        "    MT_Unit nvarchar(60) NULL,",
+        "    MT_Direction nvarchar(20) NULL,",
+        "    _CreateDate datetime2(3) NOT NULL DEFAULT (sysutcdatetime()),",
+        "    _CreatedBy nvarchar(128) NULL",
+        "  );",
+        "  CREATE UNIQUE INDEX ix_MT_Code ON kpi.Metric(MT_Code);",
+        "END",
+        "GO",
+        "",
+        "IF OBJECT_ID('kpi.Threshold','U') IS NULL",
+        "BEGIN",
+        "  CREATE TABLE kpi.Threshold (",
+        "    TH_ID uniqueidentifier NOT NULL CONSTRAINT pk_TH PRIMARY KEY,",
+        "    MT_ID uniqueidentifier NOT NULL,",
+        "    TH_Level nvarchar(40) NOT NULL,",
+        "    TH_Operator nvarchar(10) NOT NULL,",
+        "    TH_Value decimal(18,4) NOT NULL,",
+        "    TH_Color nvarchar(20) NULL,",
+        "    CONSTRAINT fk_TH_MT FOREIGN KEY (MT_ID) REFERENCES kpi.Metric(MT_ID)",
+        "  );",
+        "END",
+        "GO",
+        "",
+    ]
+
+    metrics = snapshot.get("objects", {}).get("metrics", {})
+    metric_list = metrics.get("metrics", []) if isinstance(metrics, dict) else []
+
+    try:
+        from compiler.metrics import MetricsCompiler
+        compiler = MetricsCompiler(target="tsql")
+        dax_compiler = MetricsCompiler(target="dax")
+
+        for m in metric_list:
+            mid = m.get("id") or m.get("MT_ID")
+            code = m.get("code") or m.get("MT_Code", "Unknown")
+            name = m.get("name") or m.get("MT_Name", code)
+            formula = m.get("formula") or m.get("MT_Formula")
+            unit = m.get("unit") or m.get("MT_Unit", "")
+            direction = m.get("direction") or m.get("MT_Direction", "up")
+
+            compiled_sql = ""
+            compiled_dax = ""
+            if formula:
+                try:
+                    compiled_sql = compiler.compile(formula)
+                    compiled_dax = dax_compiler.compile(formula)
+                except Exception:
+                    compiled_sql = f"/* Error compiling: {formula} */"
+                    compiled_dax = compiled_sql
+
+            if mid and code:
+                lines.append(f"IF NOT EXISTS (SELECT 1 FROM kpi.Metric WHERE MT_ID = '{mid}')")
+                lines.append(f"INSERT INTO kpi.Metric(MT_ID, MT_Code, MT_Name, MT_Formula, MT_CompiledSQL, MT_CompiledDAX, MT_Unit, MT_Direction)")
+                formula_esc = (json.dumps(formula) if formula else "NULL").replace("'", "''") if formula else "NULL"
+                sql_esc = compiled_sql.replace("'", "''") if compiled_sql else ""
+                dax_esc = compiled_dax.replace("'", "''") if compiled_dax else ""
+                lines.append(f"VALUES ('{mid}', '{code}', '{name}', '{formula_esc}', '{sql_esc}', '{dax_esc}', '{unit}', '{direction}');")
+
+                # Thresholds
+                thresholds = m.get("thresholds") or m.get("MT_Thresholds") or []
+                for th in thresholds:
+                    thid = th.get("id") or f"{mid}-{th.get('level', 'info')}"
+                    level = th.get("level") or th.get("TH_Level", "info")
+                    op = th.get("operator") or th.get("TH_Operator", ">=")
+                    val = th.get("value") or th.get("TH_Value", 0)
+                    color = th.get("color") or th.get("TH_Color", "#888888")
+                    lines.append(f"IF NOT EXISTS (SELECT 1 FROM kpi.Threshold WHERE TH_ID = '{thid}')")
+                    lines.append(f"INSERT INTO kpi.Threshold(TH_ID, MT_ID, TH_Level, TH_Operator, TH_Value, TH_Color)")
+                    lines.append(f"VALUES ('{thid}', '{mid}', '{level}', '{op}', {val}, '{color}');")
+
+        lines.append("GO")
+    except ImportError:
+        lines.append("-- Metrics compiler not available")
+
+    return "\n".join(lines)
+
+
+def emit_jobs_config(snapshot: Dict[str, Any], scheduler: str = "airflow") -> str:
+    """Emit job/pipeline configurations for specified scheduler."""
+    import sys
+    repo_root = Path(__file__).resolve().parents[2]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    jobs = snapshot.get("objects", {}).get("jobs", {})
+    job_list = jobs.get("jobs", []) if isinstance(jobs, dict) else []
+
+    if not job_list:
+        return f"# No jobs defined in snapshot\n# Scheduler: {scheduler}\n"
+
+    try:
+        from compiler.jobs import compile_job
+        outputs = []
+        for job in job_list:
+            try:
+                compiled = compile_job(job, scheduler)
+                outputs.append(f"# Job: {job.get('code', 'unknown')}\n{compiled}")
+            except Exception as e:
+                outputs.append(f"# Job: {job.get('code', 'unknown')} - Error: {e}")
+        return "\n\n".join(outputs)
+    except ImportError:
+        return f"# Jobs compiler not available\n# Scheduler: {scheduler}\n"
+
+
+def emit_lineage_json(snapshot: Dict[str, Any]) -> str:
+    """Emit lineage graph as JSON for visualization."""
+    import sys
+    repo_root = Path(__file__).resolve().parents[2]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    try:
+        from compiler.lineage import build_lineage_graph, to_json
+        graph = build_lineage_graph(snapshot)
+        return to_json(graph, include_metadata=True)
+    except ImportError:
+        return json.dumps({"error": "Lineage compiler not available"}, indent=2)
+
+
+def emit_lineage_mermaid(snapshot: Dict[str, Any]) -> str:
+    """Emit lineage graph as Mermaid diagram."""
+    import sys
+    repo_root = Path(__file__).resolve().parents[2]
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+
+    try:
+        from compiler.lineage import build_lineage_graph, to_mermaid
+        graph = build_lineage_graph(snapshot)
+        return to_mermaid(graph, title="Data Lineage")
+    except ImportError:
+        return "```mermaid\nflowchart LR\n    Error[Lineage compiler not available]\n```"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--snapshot", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--scheduler", default="airflow", help="Job scheduler target")
     args = ap.parse_args()
 
     snap = load_json(Path(args.snapshot))
@@ -617,6 +774,16 @@ def main() -> int:
     write_text(out / "sql" / "70-indexes.sql", emit_indexes_sql(snap))
     write_text(out / "sql" / "80-workflow-defs.sql", emit_workflow_defs_sql(snap))
     write_text(out / "sql" / "85-rls.sql", emit_rls_sql(snap))
+    write_text(out / "sql" / "86-metrics.sql", emit_metrics_sql(snap))
+
+    # Jobs/Pipelines
+    scheduler = getattr(args, 'scheduler', 'airflow')
+    ext = "py" if scheduler in ("airflow", "prefect", "dagster") else "yaml" if scheduler in ("cron", "adf", "databricks") else "json"
+    write_text(out / "jobs" / f"pipelines.{ext}", emit_jobs_config(snap, scheduler))
+
+    # Lineage
+    write_text(out / "lineage" / "lineage.json", emit_lineage_json(snap))
+    write_text(out / "lineage" / "lineage.md", emit_lineage_mermaid(snap))
 
     # Deterministic manifest for CI/golden tests
     write_manifest(out, Path(args.snapshot))

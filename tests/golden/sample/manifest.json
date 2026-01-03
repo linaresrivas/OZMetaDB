@@ -1,16 +1,31 @@
 {
   "schema": "ozmeta.manifest.v1",
-  "generatedAtUTC": "2026-01-03T06:51:28Z",
+  "generatedAtUTC": "2026-01-03T09:31:57Z",
   "snapshot": {
     "path": "tests/fixtures/sample.snapshot.json",
     "sha256": "d6fbb63ab3e32c064a0e305d8674f758d52a58191e4bab55fc31b3e9376d88c5"
   },
-  "outputsSha256": "95c50cb0c54f75c572f4578cf16caa26a771e7ec6655194f9b17af7d3285cb17",
+  "outputsSha256": "7c884eb34cd6205f8153c289c48e9828fcad73a8c48e8753e0af125585c66fe9",
   "files": [
     {
       "path": "README.md",
       "bytes": 48,
       "sha256": "b6763b49963368a05e147c9314dd8f0e39678579b03c9f8776d9d0f22240766a"
+    },
+    {
+      "path": "jobs/pipelines.py",
+      "bytes": 51,
+      "sha256": "3bfe85de36ff5d44d52bd98bed2d6de6ecc1380d557862aa253bc7ae7a637f7a"
+    },
+    {
+      "path": "lineage/lineage.json",
+      "bytes": 1826,
+      "sha256": "dcf9332e1550283a05937208741d1e3cc643ad33c4b002554f48c74510bf667f"
+    },
+    {
+      "path": "lineage/lineage.md",
+      "bytes": 622,
+      "sha256": "8c7f0a84d2bba6188f7745c6f4971136e113442d521f40607bac5c7f29183590"
     },
     {
       "path": "sql/10-data-plane.sql",
@@ -56,6 +71,11 @@
       "path": "sql/85-rls.sql",
       "bytes": 694,
       "sha256": "2bf9063e9c0204e0c8928ffbc7136b6611dd8f38becfaf5509c5b5f0b20f6b24"
+    },
+    {
+      "path": "sql/86-metrics.sql",
+      "bytes": 1025,
+      "sha256": "5a5386559554157efa494107c915eede7c3a5879702652884478c475e4da6bdb"
     },
     {
       "path": "sql/90-constraint-profile.sql",
