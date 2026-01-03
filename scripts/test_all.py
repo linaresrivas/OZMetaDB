@@ -87,6 +87,129 @@ def test_dsl_compiler() -> bool:
         return False
 
 
+def test_metrics_compiler() -> bool:
+    """Test metrics compiler functionality."""
+    try:
+        import sys
+        sys.path.insert(0, str(ROOT))
+        from compiler.metrics import compile_metric, compile_kpi
+
+        # Test aggregation
+        metric = {'code': 'TotalSales', 'formula': 'SUM(Sales.Amount)'}
+        result = compile_metric(metric, 'tsql')
+        assert 'SUM' in result.expression, "Should contain SUM"
+        assert '[Sales]' in result.expression, "Should quote table"
+
+        # Test time intelligence
+        metric = {
+            'code': 'SalesYTD',
+            'formula': {
+                'timeIntel': 'YTD',
+                'metric': {'agg': 'SUM', 'arg': {'ref': 'Sales.Amount'}},
+                'dateColumn': {'ref': 'Sales.OrderDate'}
+            }
+        }
+        result = compile_metric(metric, 'dax')
+        assert 'TOTALYTD' in result.expression, "Should use TOTALYTD for DAX"
+
+        # Test KPI
+        kpi = {
+            'code': 'RevenueKPI',
+            'metricCode': 'TotalSales',
+            'direction': 'HigherIsBetter',
+            'thresholds': {'red': 100000, 'yellow': 500000},
+        }
+        compiled = {'TotalSales': compile_metric({'code': 'TotalSales', 'formula': 'SUM(Sales.Amount)'}, 'tsql')}
+        kpi_result = compile_kpi(kpi, compiled, 'tsql')
+        assert 'Green' in kpi_result['statusExpression'], "Should have threshold check"
+
+        print("  [PASS] 6.1 Metrics compiler")
+        return True
+    except Exception as e:
+        print(f"  [FAIL] 6.1 Metrics compiler")
+        print(f"         {e}")
+        return False
+
+
+def test_job_compiler() -> bool:
+    """Test job/pipeline compiler functionality."""
+    try:
+        import sys
+        sys.path.insert(0, str(ROOT))
+        from compiler.jobs import compile_job, SCHEDULER_AIRFLOW, SCHEDULER_DATABRICKS
+
+        job = {
+            'code': 'test-etl',
+            'name': 'Test ETL',
+            'steps': [
+                {'code': 'step1', 'name': 'Step 1', 'type': 'sql', 'command': 'SELECT 1'},
+                {'code': 'step2', 'name': 'Step 2', 'type': 'python', 'dependsOn': ['step1']},
+            ],
+        }
+
+        # Test Airflow
+        result = compile_job(job, SCHEDULER_AIRFLOW)
+        assert 'from airflow import DAG' in result.code, "Should have Airflow imports"
+        assert result.fileExtension == '.py', "Should be Python file"
+
+        # Test Databricks
+        result = compile_job(job, SCHEDULER_DATABRICKS)
+        assert '"tasks"' in result.code, "Should have tasks array"
+        assert result.fileExtension == '.json', "Should be JSON file"
+
+        print("  [PASS] 6.2 Job compiler")
+        return True
+    except Exception as e:
+        print(f"  [FAIL] 6.2 Job compiler")
+        print(f"         {e}")
+        return False
+
+
+def test_lineage_compiler() -> bool:
+    """Test lineage compiler functionality."""
+    try:
+        import sys
+        sys.path.insert(0, str(ROOT))
+        from compiler.lineage import (
+            LineageGraph, LineageNode, LineageEdge, NodeType, EdgeType,
+            get_upstream, get_downstream, get_impact_analysis, to_mermaid, to_json
+        )
+
+        # Build graph
+        graph = LineageGraph()
+        graph.add_node(LineageNode(id='src:1', name='Source', nodeType=NodeType.SOURCE_FIELD, field='col1'))
+        graph.add_node(LineageNode(id='tgt:1', name='Target', nodeType=NodeType.CANONICAL_FIELD, field='col1'))
+        graph.add_node(LineageNode(id='metric:1', name='Metric', nodeType=NodeType.METRIC))
+        graph.add_edge(LineageEdge(id='e1', sourceId='src:1', targetId='tgt:1', edgeType=EdgeType.DIRECT))
+        graph.add_edge(LineageEdge(id='e2', sourceId='tgt:1', targetId='metric:1', edgeType=EdgeType.AGGREGATE))
+
+        # Test traversal
+        upstream = get_upstream(graph, 'metric:1')
+        assert len(upstream.nodes) == 2, "Should have 2 upstream nodes"
+
+        downstream = get_downstream(graph, 'src:1')
+        assert len(downstream.nodes) == 2, "Should have 2 downstream nodes"
+
+        # Test impact analysis
+        impact = get_impact_analysis(graph, 'tgt:1', 'modify')
+        assert impact.totalImpacted == 1, "Should impact 1 node"
+        assert len(impact.recommendations) > 0, "Should have recommendations"
+
+        # Test visualization
+        mermaid = to_mermaid(graph)
+        assert 'flowchart' in mermaid, "Should have flowchart"
+
+        json_out = to_json(graph)
+        assert '"nodes"' in json_out, "Should have nodes"
+
+        print("  [PASS] 6.3 Lineage compiler")
+        return True
+    except Exception as e:
+        print(f"  [FAIL] 6.3 Lineage compiler")
+        print(f"         {e}")
+        return False
+
+
 def test_migration_runner() -> bool:
     """Test migration runner functionality."""
     try:
@@ -201,7 +324,13 @@ def main() -> int:
     print("\n5. Migration Runner")
     results.append(test_migration_runner())
 
-    # 6. Summary
+    # 6. New Compilers
+    print("\n6. New Compilers")
+    results.append(test_metrics_compiler())
+    results.append(test_job_compiler())
+    results.append(test_lineage_compiler())
+
+    # 7. Summary
     print("\n" + "=" * 50)
     passed = sum(results)
     total = len(results)
