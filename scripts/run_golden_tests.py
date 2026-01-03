@@ -39,6 +39,17 @@ def sha256_file(p: Path) -> str:
     return h.hexdigest()
 
 
+def normalize_manifest_for_compare(p: Path) -> str:
+    """Normalize manifest.json for comparison by removing volatile fields."""
+    import json
+    import re
+    content = p.read_text(encoding="utf-8")
+    data = json.loads(content)
+    # Remove timestamp which changes every run
+    data.pop("generatedAtUTC", None)
+    return json.dumps(data, sort_keys=True)
+
+
 def collect_files(base: Path) -> List[Path]:
     return sorted([p for p in base.rglob("*") if p.is_file()])
 
@@ -61,7 +72,12 @@ def compare_dirs(out_dir: Path, golden_dir: Path) -> Tuple[bool, List[str]]:
     for rel in sorted(set(out_files).intersection(gold_files)):
         a = out_dir / rel
         b = golden_dir / rel
-        if sha256_file(a) != sha256_file(b):
+        # Special handling for manifest.json - ignore timestamp
+        if rel == "manifest.json":
+            if normalize_manifest_for_compare(a) != normalize_manifest_for_compare(b):
+                ok = False
+                diffs.append(f"Content differs: {rel}")
+        elif sha256_file(a) != sha256_file(b):
             ok = False
             diffs.append(f"Content differs: {rel}")
     return ok and len(diffs) == 0, diffs
