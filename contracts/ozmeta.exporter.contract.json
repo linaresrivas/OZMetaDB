@@ -2343,6 +2343,572 @@
       "orderBy": [
         "PS_ObjectType"
       ]
+    },
+    {
+      "name": "text_keys_project",
+      "purpose": "All TextKeys referenced by the project (deterministic union).",
+      "sql": "WITH tk AS (\n  SELECT TK_ID FROM Meta.Project WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND PJ_TextKeyID IS NOT NULL\n  UNION SELECT TB_TextKeyID FROM Meta.Table WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND TB_TextKeyID IS NOT NULL\n  UNION SELECT FD_TextKeyID FROM Meta.Field f JOIN Meta.Table t ON t.TB_ID=f.TB_ID WHERE t.PJ_ID=@PJ_ID AND t._DeleteDate IS NULL AND f._DeleteDate IS NULL AND f.FD_TextKeyID IS NOT NULL\n  UNION SELECT WF_TextKeyID FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND WF_TextKeyID IS NOT NULL\n  UNION SELECT WS_TextKeyID FROM Meta.WorkflowState WHERE _DeleteDate IS NULL AND WF_ID IN (SELECT WF_ID FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) AND WS_TextKeyID IS NOT NULL\n  UNION SELECT WT_TextKeyID FROM Meta.WorkflowTransition WHERE _DeleteDate IS NULL AND WF_ID IN (SELECT WF_ID FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) AND WT_TextKeyID IS NOT NULL\n  UNION SELECT SP_TextKeyID FROM Meta.SecurityPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND SP_TextKeyID IS NOT NULL\n  UNION SELECT DP_TextKeyID FROM Meta.DataProtectionPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND DP_TextKeyID IS NOT NULL\n  UNION SELECT SL_TextKeyID FROM Meta.SlaPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND SL_TextKeyID IS NOT NULL\n  UNION SELECT RO_TextKeyID FROM Meta.Role WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND RO_TextKeyID IS NOT NULL\n  UNION SELECT DT_TextKeyID FROM Meta.DocumentType WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND DT_TextKeyID IS NOT NULL\n  UNION SELECT RP_TextKeyID FROM Meta.RedactionPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND RP_TextKeyID IS NOT NULL\n  UNION SELECT RTN_TextKeyID FROM Meta.RetentionPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND RTN_TextKeyID IS NOT NULL\n  UNION SELECT UA_TextKeyID FROM Meta.UiApp WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND UA_TextKeyID IS NOT NULL\n  UNION SELECT UP_TextKeyID FROM Meta.UiPage WHERE _DeleteDate IS NULL AND UA_ID IN (SELECT UA_ID FROM Meta.UiApp WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) AND UP_TextKeyID IS NOT NULL\n  UNION SELECT UC_TextKeyID FROM Meta.UiComponent WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND UC_TextKeyID IS NOT NULL\n  UNION SELECT UPC_TextKeyID FROM Meta.UiPageComponent WHERE _DeleteDate IS NULL AND UP_ID IN (SELECT UP_ID FROM Meta.UiPage WHERE _DeleteDate IS NULL AND UA_ID IN (SELECT UA_ID FROM Meta.UiApp WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL)) AND UPC_TextKeyID IS NOT NULL\n  UNION SELECT UV_MessageTextKeyID FROM Meta.UiValidationRule WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND UV_MessageTextKeyID IS NOT NULL\n  UNION SELECT UFAC_TextKeyID FROM Meta.UiSearchFacet WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND UFAC_TextKeyID IS NOT NULL\n  UNION SELECT SM_TextKeyID FROM Meta.SemanticModel WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND SM_TextKeyID IS NOT NULL\n  UNION SELECT SMR_TextKeyID FROM Meta.SemanticMeasure WHERE _DeleteDate IS NULL AND SM_ID IN (SELECT SM_ID FROM Meta.SemanticModel WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) AND SMR_TextKeyID IS NOT NULL\n  UNION SELECT FT_TextKeyID FROM Meta.FeatureDef WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND FT_TextKeyID IS NOT NULL\n  UNION SELECT ML_TextKeyID FROM Meta.ModelRegistry WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND ML_TextKeyID IS NOT NULL\n  UNION SELECT DA_TextKeyID FROM Meta.DataAsset WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND DA_TextKeyID IS NOT NULL\n)\nSELECT k.TK_ID, k.TK_Code, k.TK_DefaultText, k.TK_Notes\nFROM Meta.TextKey k\nJOIN tk ON tk.TK_ID = k.TK_ID\nWHERE k._DeleteDate IS NULL\nORDER BY k.TK_Code;",
+      "output": [
+        {
+          "name": "TK_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TK_Code",
+          "type": "nvarchar(200)"
+        },
+        {
+          "name": "TK_DefaultText",
+          "type": "nvarchar(2000)"
+        },
+        {
+          "name": "TK_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "TK_Code"
+      ]
+    },
+    {
+      "name": "translations_project",
+      "purpose": "Translations for TextKeys referenced by the project.",
+      "sql": "WITH tk AS (\n  SELECT k.TK_ID\n  FROM (\n    SELECT TK_ID FROM Meta.Project WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND PJ_TextKeyID IS NOT NULL\n    UNION SELECT TB_TextKeyID FROM Meta.Table WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND TB_TextKeyID IS NOT NULL\n    UNION SELECT FD_TextKeyID FROM Meta.Field f JOIN Meta.Table t ON t.TB_ID=f.TB_ID WHERE t.PJ_ID=@PJ_ID AND t._DeleteDate IS NULL AND f._DeleteDate IS NULL AND f.FD_TextKeyID IS NOT NULL\n    UNION SELECT WF_TextKeyID FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND WF_TextKeyID IS NOT NULL\n    UNION SELECT WS_TextKeyID FROM Meta.WorkflowState WHERE _DeleteDate IS NULL AND WF_ID IN (SELECT WF_ID FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) AND WS_TextKeyID IS NOT NULL\n    UNION SELECT WT_TextKeyID FROM Meta.WorkflowTransition WHERE _DeleteDate IS NULL AND WF_ID IN (SELECT WF_ID FROM Meta.Workflow WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) AND WT_TextKeyID IS NOT NULL\n    UNION SELECT SP_TextKeyID FROM Meta.SecurityPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND SP_TextKeyID IS NOT NULL\n    UNION SELECT DP_TextKeyID FROM Meta.DataProtectionPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND DP_TextKeyID IS NOT NULL\n    UNION SELECT SL_TextKeyID FROM Meta.SlaPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND SL_TextKeyID IS NOT NULL\n    UNION SELECT RO_TextKeyID FROM Meta.Role WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND RO_TextKeyID IS NOT NULL\n    UNION SELECT DT_TextKeyID FROM Meta.DocumentType WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND DT_TextKeyID IS NOT NULL\n    UNION SELECT RP_TextKeyID FROM Meta.RedactionPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND RP_TextKeyID IS NOT NULL\n    UNION SELECT RTN_TextKeyID FROM Meta.RetentionPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND RTN_TextKeyID IS NOT NULL\n    UNION SELECT UA_TextKeyID FROM Meta.UiApp WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND UA_TextKeyID IS NOT NULL\n    UNION SELECT UP_TextKeyID FROM Meta.UiPage WHERE _DeleteDate IS NULL AND UA_ID IN (SELECT UA_ID FROM Meta.UiApp WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) AND UP_TextKeyID IS NOT NULL\n    UNION SELECT UC_TextKeyID FROM Meta.UiComponent WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND UC_TextKeyID IS NOT NULL\n    UNION SELECT UPC_TextKeyID FROM Meta.UiPageComponent WHERE _DeleteDate IS NULL AND UP_ID IN (SELECT UP_ID FROM Meta.UiPage WHERE _DeleteDate IS NULL AND UA_ID IN (SELECT UA_ID FROM Meta.UiApp WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL)) AND UPC_TextKeyID IS NOT NULL\n    UNION SELECT UV_MessageTextKeyID FROM Meta.UiValidationRule WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND UV_MessageTextKeyID IS NOT NULL\n    UNION SELECT UFAC_TextKeyID FROM Meta.UiSearchFacet WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND UFAC_TextKeyID IS NOT NULL\n    UNION SELECT SM_TextKeyID FROM Meta.SemanticModel WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND SM_TextKeyID IS NOT NULL\n    UNION SELECT SMR_TextKeyID FROM Meta.SemanticMeasure WHERE _DeleteDate IS NULL AND SM_ID IN (SELECT SM_ID FROM Meta.SemanticModel WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) AND SMR_TextKeyID IS NOT NULL\n    UNION SELECT FT_TextKeyID FROM Meta.FeatureDef WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND FT_TextKeyID IS NOT NULL\n    UNION SELECT ML_TextKeyID FROM Meta.ModelRegistry WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND ML_TextKeyID IS NOT NULL\n    UNION SELECT DA_TextKeyID FROM Meta.DataAsset WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL AND DA_TextKeyID IS NOT NULL\n  ) x\n  JOIN Meta.TextKey k ON k.TK_ID = x.TK_ID\n  WHERE k._DeleteDate IS NULL\n)\nSELECT tr.TR_ID, tr.TK_ID, tr.LG_Code, tr.TR_Text, tr.TR_Notes\nFROM Meta.Translation tr\nJOIN tk ON tk.TK_ID = tr.TK_ID\nWHERE tr._DeleteDate IS NULL\nORDER BY tr.LG_Code, tr.TK_ID;",
+      "output": [
+        {
+          "name": "TR_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TK_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "LG_Code",
+          "type": "nvarchar(20)"
+        },
+        {
+          "name": "TR_Text",
+          "type": "nvarchar(4000)"
+        },
+        {
+          "name": "TR_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "LG_Code",
+        "TK_ID"
+      ]
+    },
+    {
+      "name": "project_languages",
+      "purpose": "Project language requirements.",
+      "sql": "SELECT PL_ID, PJ_ID, LG_Code, PL_IsDefault, PL_IsRequired, PL_Notes FROM Meta.ProjectLanguage WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY PL_IsDefault DESC, LG_Code;",
+      "output": [
+        {
+          "name": "PL_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "LG_Code",
+          "type": "nvarchar(20)"
+        },
+        {
+          "name": "PL_IsDefault",
+          "type": "bit"
+        },
+        {
+          "name": "PL_IsRequired",
+          "type": "bit"
+        },
+        {
+          "name": "PL_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "PL_IsDefault DESC",
+        "LG_Code"
+      ]
+    },
+    {
+      "name": "text_usage",
+      "purpose": "Explicit TextKey usage bindings (preferred over unions when present).",
+      "sql": "SELECT TU_ID, PJ_ID, TU_ObjectType, TU_ObjectID, TU_PropertyName, TK_ID, TU_Notes FROM Meta.TextUsage WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY TU_ObjectType, TU_PropertyName;",
+      "output": [
+        {
+          "name": "TU_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TU_ObjectType",
+          "type": "nvarchar(50)"
+        },
+        {
+          "name": "TU_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TU_PropertyName",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "TK_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "TU_Notes",
+          "type": "nvarchar(1000)"
+        }
+      ],
+      "orderBy": [
+        "TU_ObjectType",
+        "TU_PropertyName"
+      ]
+    },
+    {
+      "name": "search_indexes",
+      "purpose": "Search index definitions for project.",
+      "sql": "SELECT SI_ID, PJ_ID, SI_Code, SI_Platform, SI_ConfigJSON, SI_TextKeyID, SI_IsEnabled FROM Meta.SearchIndex WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY SI_Code;",
+      "output": [
+        {
+          "name": "SI_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SI_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "SI_Platform",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SI_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "SI_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SI_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "SI_Code"
+      ]
+    },
+    {
+      "name": "search_fields",
+      "purpose": "Search index fields.",
+      "sql": "SELECT SFN_ID, SI_ID, SFN_FieldPath, SFN_FieldType, SFN_IsKey, SFN_IsFilterable, SFN_IsSortable, SFN_IsFacetable, SFN_Analyzer, SFN_Boost, SFN_TextKeyID, SFN_ConfigJSON FROM Meta.SearchField WHERE _DeleteDate IS NULL AND SI_ID IN (SELECT SI_ID FROM Meta.SearchIndex WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY SI_ID, SFN_FieldPath;",
+      "output": [
+        {
+          "name": "SFN_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SI_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SFN_FieldPath",
+          "type": "nvarchar(300)"
+        },
+        {
+          "name": "SFN_FieldType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "SFN_IsKey",
+          "type": "bit"
+        },
+        {
+          "name": "SFN_IsFilterable",
+          "type": "bit"
+        },
+        {
+          "name": "SFN_IsSortable",
+          "type": "bit"
+        },
+        {
+          "name": "SFN_IsFacetable",
+          "type": "bit"
+        },
+        {
+          "name": "SFN_Analyzer",
+          "type": "nvarchar(80)"
+        },
+        {
+          "name": "SFN_Boost",
+          "type": "decimal(9,4)"
+        },
+        {
+          "name": "SFN_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "SFN_ConfigJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "SI_ID",
+        "SFN_FieldPath"
+      ]
+    },
+    {
+      "name": "graph_models",
+      "purpose": "Graph models for project.",
+      "sql": "SELECT GM_ID, PJ_ID, GM_Code, GM_Platform, GM_ConfigJSON, GM_TextKeyID, GM_IsEnabled FROM Meta.GraphModel WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY GM_Code;",
+      "output": [
+        {
+          "name": "GM_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GM_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "GM_Platform",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "GM_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "GM_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GM_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "GM_Code"
+      ]
+    },
+    {
+      "name": "graph_node_types",
+      "purpose": "Graph node types.",
+      "sql": "SELECT GNT_ID, GM_ID, GNT_Code, GNT_SourceTB_ID, GNT_KeySpec, GNT_TextKeyID, GNT_ConfigJSON FROM Meta.GraphNodeType WHERE _DeleteDate IS NULL AND GM_ID IN (SELECT GM_ID FROM Meta.GraphModel WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY GM_ID, GNT_Code;",
+      "output": [
+        {
+          "name": "GNT_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GM_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GNT_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "GNT_SourceTB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GNT_KeySpec",
+          "type": "nvarchar(300)"
+        },
+        {
+          "name": "GNT_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GNT_ConfigJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "GM_ID",
+        "GNT_Code"
+      ]
+    },
+    {
+      "name": "graph_edge_types",
+      "purpose": "Graph edge types.",
+      "sql": "SELECT GET_ID, GM_ID, GET_Code, GET_FromGNT_ID, GET_ToGNT_ID, GET_Direction, GET_ScoreSpecDSL, GET_TextKeyID, GET_ConfigJSON FROM Meta.GraphEdgeType WHERE _DeleteDate IS NULL AND GM_ID IN (SELECT GM_ID FROM Meta.GraphModel WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL) ORDER BY GM_ID, GET_Code;",
+      "output": [
+        {
+          "name": "GET_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GM_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GET_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "GET_FromGNT_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GET_ToGNT_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GET_Direction",
+          "type": "nvarchar(20)"
+        },
+        {
+          "name": "GET_ScoreSpecDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "GET_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "GET_ConfigJSON",
+          "type": "nvarchar(max)"
+        }
+      ],
+      "orderBy": [
+        "GM_ID",
+        "GET_Code"
+      ]
+    },
+    {
+      "name": "purposes",
+      "purpose": "Purpose catalog for project.",
+      "sql": "SELECT PRP_ID, PJ_ID, PRP_Code, PRP_TextKeyID, PRP_Notes, PRP_IsEnabled FROM Meta.Purpose WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY PRP_Code;",
+      "output": [
+        {
+          "name": "PRP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PRP_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "PRP_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PRP_Notes",
+          "type": "nvarchar(1000)"
+        },
+        {
+          "name": "PRP_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "PRP_Code"
+      ]
+    },
+    {
+      "name": "consent_policies",
+      "purpose": "Consent policies for project.",
+      "sql": "SELECT CP_ID, PJ_ID, CP_Code, CP_ObjectType, CP_ObjectID, CP_PurposeID, CP_RuleDSL, CP_TextKeyID, CP_IsEnabled FROM Meta.ConsentPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY CP_Code;",
+      "output": [
+        {
+          "name": "CP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "CP_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "CP_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "CP_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "CP_PurposeID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "CP_RuleDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "CP_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "CP_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "CP_Code"
+      ]
+    },
+    {
+      "name": "residency_policies",
+      "purpose": "Residency policies for project.",
+      "sql": "SELECT RDP_ID, PJ_ID, RDP_Code, RDP_Region, RDP_ObjectType, RDP_ObjectID, RDP_RuleDSL, RDP_TextKeyID, RDP_IsEnabled FROM Meta.ResidencyPolicy WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY RDP_Code;",
+      "output": [
+        {
+          "name": "RDP_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RDP_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "RDP_Region",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "RDP_ObjectType",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "RDP_ObjectID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RDP_RuleDSL",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "RDP_TextKeyID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "RDP_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "RDP_Code"
+      ]
+    },
+    {
+      "name": "outbox_specs",
+      "purpose": "Outbox specs for project.",
+      "sql": "SELECT OB_ID, PJ_ID, OB_Code, OB_SourceTB_ID, OB_ChannelID, OB_IdempotencyKeySpec, OB_Serializer, OB_ConfigJSON, OB_IsEnabled FROM Meta.OutboxSpec WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY OB_Code;",
+      "output": [
+        {
+          "name": "OB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "OB_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "OB_SourceTB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "OB_ChannelID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "OB_IdempotencyKeySpec",
+          "type": "nvarchar(300)"
+        },
+        {
+          "name": "OB_Serializer",
+          "type": "nvarchar(30)"
+        },
+        {
+          "name": "OB_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "OB_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "OB_Code"
+      ]
+    },
+    {
+      "name": "inbox_specs",
+      "purpose": "Inbox specs for project.",
+      "sql": "SELECT IB_ID, PJ_ID, IB_Code, IB_ChannelID, IB_DedupeKeySpec, IB_RetrySpecJSON, IB_ConfigJSON, IB_IsEnabled FROM Meta.InboxSpec WHERE PJ_ID=@PJ_ID AND _DeleteDate IS NULL ORDER BY IB_Code;",
+      "output": [
+        {
+          "name": "IB_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "PJ_ID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "IB_Code",
+          "type": "nvarchar(120)"
+        },
+        {
+          "name": "IB_ChannelID",
+          "type": "uniqueidentifier"
+        },
+        {
+          "name": "IB_DedupeKeySpec",
+          "type": "nvarchar(300)"
+        },
+        {
+          "name": "IB_RetrySpecJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "IB_ConfigJSON",
+          "type": "nvarchar(max)"
+        },
+        {
+          "name": "IB_IsEnabled",
+          "type": "bit"
+        }
+      ],
+      "orderBy": [
+        "IB_Code"
+      ]
     }
   ],
   "notes": [

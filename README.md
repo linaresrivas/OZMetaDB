@@ -30,3 +30,20 @@ Env values: `Dev, Test, Uat, ProdA, ProdB`
 - Visual deduction: names and logs are instantly interpretable
 - Portability: Azure/GCP/AWS/OnPrem are all supported targets
 - Integrity: auditability, lineage, and drift validation are first-class
+
+## CI Validation
+Run `python scripts/validate_snapshot.py exports/samples/sample.snapshot.json` to validate schema + localization completeness.
+
+## UI Console
+See `ui/ozmetadb-console/` for the Next.js console skeleton.
+
+## Generators
+```bash
+python generator/src/generate_from_snapshot.py --snapshot exports/samples/sample.snapshot.json --out out/generated
+```
+
+## CI/CD
+Workflows under `.github/workflows/`:
+- validate-snapshot
+- lint
+- test-generators

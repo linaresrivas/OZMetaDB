@@ -127,3 +127,14 @@ Support fact/dimension modeling (grain, SCD) and partition strategy specs.
 
 EVIDENCE INTEGRITY
 Support retention and document integrity policies (hash/signed/hashchain/WORM) for evidence.
+
+
+LOCALIZATION FULL FIDELITY
+Exporter must include project-referenced TextKeys and Translations so snapshots can generate multilingual UI and docs without DB connectivity.
+
+
+GOVERNANCE
+Support purpose limitation, consent policies, and residency policies via portable DSL.
+
+RELIABILITY
+Support outbox/inbox specs and idempotency key specs for event-driven delivery guarantees.

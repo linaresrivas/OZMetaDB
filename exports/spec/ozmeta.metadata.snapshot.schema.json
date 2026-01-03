@@ -52,16 +52,21 @@
         "enums",
         "eventing",
         "fields",
+        "governance",
+        "graph",
         "ingestion",
         "jobs",
         "lifecycle",
         "lineage",
+        "localization",
         "mappings",
         "metrics",
         "platform",
         "quality",
         "relations",
+        "reliability",
         "runtime",
+        "search",
         "security",
         "semantic",
         "sources",
@@ -135,7 +140,23 @@
         },
         "texts": {
           "type": "object",
-          "additionalProperties": true
+          "additionalProperties": true,
+          "properties": {
+            "languages": {
+              "type": "array"
+            },
+            "textKeys": {
+              "type": "array"
+            },
+            "translations": {
+              "type": "array"
+            }
+          },
+          "required": [
+            "languages",
+            "textKeys",
+            "translations"
+          ]
         },
         "enums": {
           "type": "array",
@@ -201,6 +222,26 @@
           "additionalProperties": true
         },
         "biModel": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "localization": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "search": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "graph": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "governance": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "reliability": {
           "type": "object",
           "additionalProperties": true
         }

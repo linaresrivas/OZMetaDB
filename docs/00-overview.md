@@ -32,3 +32,41 @@ See also: `docs/15-exporter-contract.md` for deterministic exporter contract.
 See also: `docs/16-roadmap-priorities.md` for prioritization roadmap.
 
 See also: `docs/17-next-expansion-ui-lineage-sync-bi.md` for UI/lineage/offline/BI expansions.
+
+See also: `docs/18-localization-full-fidelity-export.md` for full-fidelity localization exports.
+
+See also: `docs/19-ci-validation.md` for CI validation rules.
+
+See also: `docs/20-ui-blueprint-console.md`.
+
+See also: `docs/21-nextjs-console-structure.md`.
+
+See also: `docs/22-identity-and-theming-patterns.md`.
+
+See also: `docs/23-console-wiring-plan.md` for console wiring plan.
+
+See also: `docs/24-enums.md`.
+
+See also: `docs/25-documents-redaction.md`.
+
+See also: `docs/26-identity-resolution.md`.
+
+See also: `docs/27-dr-topology.md`.
+
+See also: `docs/28-graph-model.md`.
+
+See also: `docs/29-governance-consent-purpose-residency.md`.
+
+See also: `docs/30-reliability-outbox-inbox.md`.
+
+See also: `docs/31-performance-scalability.md`.
+
+See also: `docs/32-platform-service-map.md`.
+
+CI: workflows under `.github/workflows/`.
+
+See also: `docs/40-exporter-contract-full-fidelity.md`.
+
+See also: `docs/41-testing-strategy.md`.
+
+See also: `docs/42-governance-implementation.md`.

@@ -37,7 +37,42 @@
       "textKeys": [],
       "translations": []
     },
-    "enums": [],
+    "enums": {
+      "enums": [
+        {
+          "id": "00000000-0000-0000-0000-000000000401",
+          "code": "CaseStatus",
+          "textKeyId": null,
+          "notes": "Case lifecycle status"
+        }
+      ],
+      "values": [
+        {
+          "enumId": "00000000-0000-0000-0000-000000000401",
+          "enumCode": "CaseStatus",
+          "code": "NEW",
+          "sort": 10,
+          "textKeyId": null,
+          "isDefault": true
+        },
+        {
+          "enumId": "00000000-0000-0000-0000-000000000401",
+          "enumCode": "CaseStatus",
+          "code": "REVIEW",
+          "sort": 20,
+          "textKeyId": null,
+          "isDefault": false
+        },
+        {
+          "enumId": "00000000-0000-0000-0000-000000000401",
+          "enumCode": "CaseStatus",
+          "code": "CLOSED",
+          "sort": 30,
+          "textKeyId": null,
+          "isDefault": false
+        }
+      ]
+    },
     "sources": {
       "sourceSystems": [],
       "sourceObjects": [],
@@ -55,8 +90,39 @@
       "certifications": []
     },
     "documents": {
-      "documentTypes": [],
-      "redactionPolicies": []
+      "documentTypes": [
+        {
+          "id": "00000000-0000-0000-0000-000000000501",
+          "code": "EvidencePhoto",
+          "allowedMimeCsv": "image/jpeg,image/png",
+          "storageClass": "Hot",
+          "integrityMode": "Hash",
+          "textKeyId": null,
+          "configJson": "{}",
+          "isEnabled": true
+        }
+      ],
+      "redactionPolicies": [
+        {
+          "id": "00000000-0000-0000-0000-000000000503",
+          "code": "PII_Redaction",
+          "ruleDsl": "redact entities: [SSN, DOB, Address]",
+          "textKeyId": null,
+          "configJson": "{}",
+          "isEnabled": true
+        }
+      ],
+      "retentionPolicies": [
+        {
+          "id": "00000000-0000-0000-0000-000000000502",
+          "code": "EvidenceRetention",
+          "days": 3650,
+          "legalHold": true,
+          "textKeyId": null,
+          "configJson": "{}",
+          "isEnabled": true
+        }
+      ]
     },
     "eventing": {
       "eventBuses": [],
@@ -83,8 +149,62 @@
       "changeRequests": []
     },
     "ui": {
-      "apps": [],
-      "pages": [],
+      "apps": [
+        {
+          "id": "00000000-0000-0000-0000-000000000601",
+          "code": "Console",
+          "themeJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        }
+      ],
+      "pages": [
+        {
+          "id": "00000000-0000-0000-0000-000000000611",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Home",
+          "route": "/",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000612",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Model",
+          "route": "/model",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000613",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Workflows",
+          "route": "/workflows",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000614",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Security",
+          "route": "/security",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000615",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Governance",
+          "route": "/governance",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        }
+      ],
       "components": [],
       "pageComponents": [],
       "validationRules": [],
@@ -103,6 +223,79 @@
       "facts": [],
       "dimensions": [],
       "partitions": []
+    },
+    "localization": {
+      "projectLanguages": [
+        {
+          "PL_ID": "00000000-0000-0000-0000-000000000000",
+          "PJ_ID": "00000000-0000-0000-0000-000000000000",
+          "LG_Code": "en-US",
+          "PL_IsDefault": true,
+          "PL_IsRequired": true,
+          "PL_Notes": null
+        }
+      ],
+      "textUsage": []
+    },
+    "search": {
+      "indexes": [],
+      "fields": []
+    },
+    "graph": {
+      "models": [],
+      "nodeTypes": [],
+      "edgeTypes": []
+    },
+    "governance": {
+      "purposes": [],
+      "consentPolicies": [],
+      "residencyPolicies": []
+    },
+    "reliability": {
+      "outboxSpecs": [],
+      "inboxSpecs": []
+    },
+    "model": {
+      "tables": [
+        {
+          "schema": "dp",
+          "code": "Transaction",
+          "fields": [
+            {
+              "code": "TR_ID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "TREM_ID",
+              "type": "uuidv7",
+              "nullable": false
+            },
+            {
+              "code": "TREM_ApprovedBy",
+              "type": "uuidv7",
+              "nullable": true
+            },
+            {
+              "code": "_TenantID",
+              "type": "uuidv7",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "identityResolution": {
+      "matchRules": [
+        {
+          "code": "PersonMatch",
+          "rule": "match on (name,email,phone) with weights"
+        }
+      ]
     }
+  },
+  "meta": {
+    "projectId": "00000000-0000-0000-0000-000000000000",
+    "version": "0.1"
   }
 }

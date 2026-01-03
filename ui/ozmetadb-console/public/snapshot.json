@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "version": "0.1",
+    "exportedAtUTC": "1970-01-01T00:00:00Z",
+    "projectId": "00000000-0000-0000-0000-000000000000"
+  },
+  "objects": {
+    "texts": {
+      "languages": [
+        "en-US"
+      ],
+      "textKeys": [],
+      "translations": []
+    },
+    "uiThemes": [
+      {
+        "UT_ID": "00000000-0000-0000-0000-000000000001",
+        "PJ_ID": "00000000-0000-0000-0000-000000000000",
+        "UT_Code": "Default",
+        "UT_TokensJSON": "{\"--radius\": \"16px\", \"--brand\": \"#111827\", \"--surface\": \"#ffffff\"}"
+      }
+    ],
+    "ui": {
+      "pages": [
+        {
+          "id": "00000000-0000-0000-0000-000000000611",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Home",
+          "route": "/",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000612",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Model",
+          "route": "/model",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000613",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Workflows",
+          "route": "/workflows",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000614",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Security",
+          "route": "/security",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000615",
+          "appId": "00000000-0000-0000-0000-000000000601",
+          "code": "Governance",
+          "route": "/governance",
+          "layoutJson": "{}",
+          "textKeyId": null,
+          "isEnabled": true
+        }
+      ]
+    }
+  }
+}
