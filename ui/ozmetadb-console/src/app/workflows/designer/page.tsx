@@ -2,7 +2,7 @@
 
 import { AppShell } from "@/components/shell/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ReactFlow, { Background, Controls, MiniMap, type Node, type Edge } from "@xyflow/react";
+import { ReactFlow, Background, Controls, MiniMap, type Node, type Edge } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 const nodes: Node[] = [

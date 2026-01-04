@@ -15,3 +15,8 @@ export function useSelection() {
   if (!v) throw new Error("useSelection must be used within SelectionProvider");
   return v;
 }
+
+export function useSelectionValue() {
+  const { selection } = useSelection();
+  return selection;
+}
